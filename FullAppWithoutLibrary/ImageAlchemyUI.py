@@ -1,14 +1,18 @@
 import webbrowser
 
 import matplotlib.pyplot as plt
+
+# in CMD: pip install qdarkstyle
+# import qdarktheme
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import QHeaderView
 
-from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
 from Classes.ExtendedWidgets.CustomTabWidget import CustomTabWidget
+from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
+from Classes.ExtendedWidgets.ThemeDialog import ThemeDialog
 from ImageAlchemyBackend import Backend
 
 
@@ -400,8 +404,8 @@ class Ui_ImgProcessor(object):
         # MenuBar: Menues
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
-        self.menuView = QtWidgets.QMenu(self.menubar)
-        self.menuView.setObjectName("menuView")
+        self.menuEdit = QtWidgets.QMenu(self.menubar)
+        self.menuEdit.setObjectName("menuEdit")
         self.menuTools = QtWidgets.QMenu(self.menubar)
         self.menuTools.setObjectName("menuLibrary")
         self.menuHelp = QtWidgets.QMenu(self.menubar)
@@ -409,7 +413,7 @@ class Ui_ImgProcessor(object):
 
         # Add Menus to menubar
         self.menubar.addAction(self.menuFile.menuAction())
-        # self.menubar.addAction(self.menuView.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
 
@@ -443,6 +447,14 @@ class Ui_ImgProcessor(object):
         self.menuFile.addAction(self.actionSave_all)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
+
+        # MenuBar -> menuEdit actions
+        # menuEdit submenus
+        self.actionThemes = QtWidgets.QAction(self.menuEdit)
+        self.actionThemes.setObjectName("Themes")
+        self.actionThemes.triggered.connect(self.change_app_theme)
+        # Add submenus to menuTools
+        self.menuEdit.addAction(self.actionThemes)
 
         # MenuBar -> menuTools actions
         # menuTools submenus
@@ -627,6 +639,15 @@ class Ui_ImgProcessor(object):
             not self.control_panel_header_btn.isChecked()
         )
 
+    def change_app_theme(self):
+        dialog = ThemeDialog()
+        dialog.exec()
+        dialog.stylesheetSelected.connect(self.apply_stylesheet)
+
+    def apply_stylesheet(self, stylesheet_path):
+        with open(stylesheet_path) as f:
+            self.setStyleSheet(f.read())
+
     def open_documentation(self):
         webbrowser.open("https://github.com/Computer-Vision-Spring-2024/Task-1")
 
@@ -639,7 +660,7 @@ class Ui_ImgProcessor(object):
             _translate("ImgProcessor", "Main Viewport"),
         )
         self.menuFile.setTitle(_translate("ImgProcessor", "File"))
-        self.menuView.setTitle(_translate("ImgProcessor", "View"))
+        self.menuEdit.setTitle(_translate("ImgProcessor", "Edit"))
         self.menuHelp.setTitle(_translate("ImgProcessor", "Help"))
         self.menuTools.setTitle(_translate("ImgProcessor", "Tools"))
         self.menu_standard_images_library.setTitle(
@@ -676,15 +697,17 @@ class Ui_ImgProcessor(object):
         self.actionSpecial.setText(_translate("ImgProcessor", "Special"))
         self.actionFingerprints.setText(_translate("ImgProcessor", "Fingerprints"))
         self.actionTextures.setText(_translate("ImgProcessor", "Textures"))
+        self.actionThemes.setText(_translate("ImgProcessor", "Themes"))
 
 
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    with open("Resources\Stylesheet.qss", "r") as f:
+    with open("Resources\BlackTheme.qss", "r") as f:
         stylesheet = f.read()
         app.setStyleSheet(stylesheet)
+    # qdarktheme.setup_theme("dark")
     ImgProcessor = QtWidgets.QMainWindow()
     ui = Ui_ImgProcessor()
     ui.setupUi(ImgProcessor)

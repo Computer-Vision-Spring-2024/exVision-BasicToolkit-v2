@@ -1,10 +1,10 @@
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QFrame
+import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtWidgets
-import cv2
-import numpy as np
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QFrame
 
 
 class CustomFrame(QFrame):
@@ -15,12 +15,12 @@ class CustomFrame(QFrame):
         self.setAcceptDrops(True)
 
         self.dropped_path = None
-        self.subplot= None
-        self.figure= None
-        self.canvas= None
-        self.title= title
-        self.frame_name= frame_name
-        self.flag= self.determine_flag()
+        self.subplot = None
+        self.figure = None
+        self.canvas = None
+        self.title = title
+        self.frame_name = frame_name
+        self.flag = self.determine_flag()
         self.setup_canvas()
 
     def dragEnterEvent(self, event):
@@ -38,7 +38,7 @@ class CustomFrame(QFrame):
                     if self.dropped_path.lower().endswith(
                         (".png", ".jpg", ".jpeg", ".ppm", ".bmp", ".pgm")
                     ):
-                        img= cv2.imread(self.dropped_path)
+                        img = cv2.imread(self.dropped_path)
                         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
                         img = self.to_grayscale(img)
                         if not self.flag == 3:
@@ -49,15 +49,16 @@ class CustomFrame(QFrame):
                         print("Not an image file:", self.dropped_path)
             except Exception as e:
                 print("Error accessing file:", e)
-    
+
     def determine_flag(self):
-        last_letter= self.frame_name[-1]
+        last_letter = self.frame_name[-1]
         if last_letter == "1":
-            return(1)
+            return 1
         elif last_letter == "2":
-            return(0)
+            return 0
         else:
-            return(3)
+            return 3
+
     def setup_canvas(self):
         """
         Description:
@@ -70,7 +71,7 @@ class CustomFrame(QFrame):
         self.setStyleSheet("border: 1px solid white;")
         # Create figure and subplot
         self.figure = plt.figure()
-        self.subplot= self.figure.add_subplot(111)
+        self.subplot = self.figure.add_subplot(111)
         self.subplot.set_title(self.title, color="white")
         self.subplot.axis("off")
         self.figure.patch.set_facecolor("none")
@@ -91,7 +92,7 @@ class CustomFrame(QFrame):
         """
         self.subplot.imshow(img, cmap="gray")
         self.canvas.draw()
-        
+
     def to_grayscale(self, image):
         """
         Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
