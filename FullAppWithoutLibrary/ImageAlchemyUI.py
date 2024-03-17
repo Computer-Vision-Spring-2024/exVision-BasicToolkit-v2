@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import QHeaderView
 
 from Classes.ExtendedWidgets.CustomTabWidget import CustomTabWidget
 from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
-from Classes.ExtendedWidgets.ThemeDialog import ThemeDialog
 from ImageAlchemyBackend import Backend
 
 
@@ -159,11 +158,6 @@ class Ui_ImgProcessor(object):
         self.effect_menu_header_HLayout = QtWidgets.QHBoxLayout(self.effect_menu_header)
         self.effect_menu_header_HLayout.setObjectName("effect_menu_header_HLayout")
         self.effect_menu_header_HLayout.setContentsMargins(0, 0, 0, 0)
-        # Spacer in the header
-        self.effect_menu_header_spacer = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
-        )
-        self.effect_menu_header_HLayout.addItem(self.effect_menu_header_spacer)
         # Header Button
         self.effect_menu_header_btn = QtWidgets.QPushButton(self.effect_menu_header)
         self.effect_menu_header_btn.setObjectName("effect_menu_header_btn")
@@ -452,7 +446,7 @@ class Ui_ImgProcessor(object):
         # menuEdit submenus
         self.actionThemes = QtWidgets.QAction(self.menuEdit)
         self.actionThemes.setObjectName("Themes")
-        self.actionThemes.triggered.connect(self.change_app_theme)
+        # self.actionThemes.triggered.connect(self.change_app_theme)
         # Add submenus to menuTools
         self.menuEdit.addAction(self.actionThemes)
 
@@ -638,15 +632,6 @@ class Ui_ImgProcessor(object):
         self.control_panel_header_btn.setChecked(
             not self.control_panel_header_btn.isChecked()
         )
-
-    def change_app_theme(self):
-        dialog = ThemeDialog()
-        dialog.exec()
-        dialog.stylesheetSelected.connect(self.apply_stylesheet)
-
-    def apply_stylesheet(self, stylesheet_path):
-        with open(stylesheet_path) as f:
-            self.setStyleSheet(f.read())
 
     def open_documentation(self):
         webbrowser.open("https://github.com/Computer-Vision-Spring-2024/Task-1")
