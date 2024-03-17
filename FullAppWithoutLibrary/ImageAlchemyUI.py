@@ -3,7 +3,7 @@ import webbrowser
 import matplotlib.pyplot as plt
 
 # in CMD: pip install qdarkstyle
-# import qdarktheme
+import qdarktheme
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QSize, Qt
@@ -689,10 +689,10 @@ if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
-    with open("Resources\BlackTheme.qss", "r") as f:
-        stylesheet = f.read()
-        app.setStyleSheet(stylesheet)
-    # qdarktheme.setup_theme("dark")
+    # with open("Resources\BlackTheme.qss", "r") as f:
+    #     stylesheet = f.read()
+    #     app.setStyleSheet(stylesheet)
+    qdarktheme.setup_theme("dark")
     ImgProcessor = QtWidgets.QMainWindow()
     ui = Ui_ImgProcessor()
     ui.setupUi(ImgProcessor)
