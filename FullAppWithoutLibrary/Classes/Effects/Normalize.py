@@ -33,6 +33,7 @@ class Normalizer(QDoubleClickPushButton):
         }
 
         self.normalizer_widget = NormalizeGroupBox(self.title)
+        self.normalizer_widget.setVisible(False)
         # Pass the NoiseGroupBox instance to the Noise class
         self.normalizer_widget.normalizer_effect = self
 

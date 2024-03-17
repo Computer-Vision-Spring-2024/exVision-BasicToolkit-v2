@@ -18,6 +18,7 @@ class FreqFilters(QDoubleClickPushButton):
         # Attributes
         # The group box that will contain the effect options
         self.frequency_filter_groupbox = FreqFiltersGroupBox(self.title)
+        self.frequency_filter_groupbox.setVisible(False)
         self.highpass_flag = (
             self.frequency_filter_groupbox.filter_type_comb.currentIndex()
         )  # The type of filter that will be generated

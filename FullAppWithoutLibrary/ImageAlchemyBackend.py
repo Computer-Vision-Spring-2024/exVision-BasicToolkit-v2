@@ -179,7 +179,7 @@ class Backend:
         """
         # UI Objects to Methods Connections
         ## === IMPORTING === ##
-        self.ui.image_workspace.imgDropped.connect(self.determine_tab)
+        self.ui.image_workspace.imgDropped.connect(self.load_image)
         self.ui.actionImport_Image.triggered.connect(lambda: self.load_image(None))
 
         ## === Images Library === ##
@@ -305,24 +305,6 @@ class Backend:
 
     # Importing and Plotting Functions #
     # ================================ #
-    def determine_tab(self, path, x_pos, y_pos):
-        """
-        Description:
-            - Determine the tab at which the image is dropped.
-
-        Args:
-            - path: The path of the image to be loaded.
-            - x_pos: The x-coordinate of the mouse position when the user dropped the image.
-            - y_pos: The y-coordinate of the mouse position when the user dropped the image.
-        """
-        tab_index = self.ui.image_workspace.currentIndex()
-        tab_text = self.ui.image_workspace.tabText(tab_index)
-        # If the current tab text is "Hybrid viewport", then analyze the mouse position to know
-        # if the dropped image is the first or the second image
-        if tab_text == "Hybrid viewport":
-            self.drop_hybrid_image(path, x_pos, y_pos)
-        else:
-            self.load_image(path)
 
     def load_image(self, file_path=None, folder=""):
         """
@@ -418,9 +400,12 @@ class Backend:
                 self.ui.image_workspace.setCurrentIndex(tab_index)
                 # Display the groupbox of the selected hybrid image
                 self.hybrid_object.hybrid_widget.setVisible(True)
+                # Expand the scroll area to sea the group box
+                self.ui.toggle_effect_bar(True)
+                
             else:
+                self.hide_all_groupboxes()
                 if item.childCount() > 0:
-                    self.hide_all_groupboxes()
                     # Loop over the children and display their groupboxes
                     for iterator in range(item.childCount()):
                         child = item.child(iterator)
@@ -510,68 +495,6 @@ class Backend:
 
         return grayscale_image
 
-    def drop_hybrid_image(self, path, x_pos, y_pos):
-        """
-        Description:
-            - Determine the image is dropped in which canvas.
-
-        Args:
-            - path: The path of the image to be loaded.
-            - x_pos: The x-coordinate of the mouse position when the user dropped the image.
-            - y_pos: The y-coordinate of the mouse position when the user dropped the image.
-        """
-
-        if (13 < x_pos < 450) and (50 < y_pos < 337):
-            img = cv2.imread(path)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = self.to_grayscale(img)
-            self.hybrid_object.set_image(img, 1, path)
-
-        elif (13 < x_pos < 450) and (354 < y_pos < 641):
-            img = cv2.imread(path, 0)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = self.to_grayscale(img)
-            self.hybrid_object.set_image(img, 0, path)
-
-    def display_hybrid_image(self, img, subplot, canvas):
-        """
-        Description:
-            - Determine the image is dropped in which canvas.
-
-        Args:
-            - img: The image to be loaded.
-            - subplot: The subplot at which the user dropped the image.
-            - canvas: The FigureCanvas object, to be updated after the image is displayed in the subplot.
-        """
-        subplot.imshow(img, cmap="gray")
-        canvas.draw()
-
-    def display_hybrid_image1(self, img):
-        """
-        Description:
-            - Display the first image in the hybrid tab.
-        Args:
-            - img: The image to be loaded.
-        """
-        self.display_hybrid_image(img, self.hybrid_subplot1, self.hybrid_canvas1)
-
-    def display_hybrid_image2(self, img):
-        """
-        Description:
-            - Display the second image in the hybrid tab.
-        Args:
-            - img: The image to be loaded.
-        """
-        self.display_hybrid_image(img, self.hybrid_subplot2, self.hybrid_canvas2)
-
-    def display_resulted_hybrid_img(self, img):
-        """
-        Description:
-            - Display the image of the resulted hybrid image.
-        Args:
-            - img: The image to be loaded.
-        """
-        self.display_hybrid_image(img, self.hybrid_subplot3, self.hybrid_canvas3)
 
     def display_image(self, input_img, output_img):
         """
@@ -843,15 +766,14 @@ class Backend:
             else:
                 return
 
-        edge_effect = EdgeDetector(self.ui)  # pass mainwindow
+        edge_effect = EdgeDetector()  # pass mainwindow
         edge_effect.set_working_image(
             self.current_image_data
         )  # each time you upload or even switch to new image, feed the edge detector with this image
-        edge_effect.apply_detector()
-        edge_effect.display_image()  # tailered specifically to this class, since the output of this class is not expected to be worked upon further. (maybe i'm wrong, but until this is proven)
 
         # Edge Detector Effect Signal
-        edge_effect.attributes_updated.connect(self.update_output_image)  # ??
+        edge_effect.attributes_updated.connect(self.update_output_image)
+        self.output_image = edge_effect.apply_detector()
 
         # UI Changes and Setters
         self.ui.scroll_area_VLayout.insertWidget(0, edge_effect.edge_widget)
@@ -860,6 +782,7 @@ class Backend:
         # self.current_image.set_output_image(self.output_image) #  i guess, you don't have to store it as you won't use it further. it's not like the noisy or filtered image on which you will keep processing
         self.update_tree()
         self.update_table()
+        self.display_image(self.current_image_data, self.output_image)
 
     def histograms_and_distribution_curve(self):
         print("Histograms and Distribution Curve")
@@ -1145,9 +1068,6 @@ class Backend:
             and add its new tab widget with all the desired subplots.
         """
         self.hybrid_object = HybridImages("Hybrid Image")
-        self.hybrid_object.image1_updated.connect(self.display_hybrid_image1)
-        self.hybrid_object.image2_updated.connect(self.display_hybrid_image2)
-        self.hybrid_object.hybrid_updated.connect(self.display_resulted_hybrid_img)
         self.ui.scroll_area_VLayout.insertWidget(0, self.hybrid_object.hybrid_widget)
         img_name = f"Hybrid Image {self.hybrid_img_counter}"
         self.hybrid_img_counter += 1
@@ -1172,33 +1092,11 @@ class Backend:
         self.hybrid_viewport_grid_layout.setObjectName("hybrid_gridLayout_2")
         # Set the margins of the layout
         self.hybrid_viewport_grid_layout.setContentsMargins(10, 10, 10, 10)
-        # Create subplot for each image
-        (
-            frame_image1,
-            self.hybrid_fig1,
-            self.hybrid_subplot1,
-            self.hybrid_canvas1,
-            self.hybrid_layout1,
-        ) = self.create_subplot("Image One", "frame_image1")
-        (
-            frame_image2,
-            self.hybrid_fig2,
-            self.hybrid_subplot2,
-            self.hybrid_canvas2,
-            self.hybrid_layout2,
-        ) = self.create_subplot("Image Two", "frame_image2")
-        (
-            frame_hybrid,
-            self.hybrid_fig3,
-            self.hybrid_subplot3,
-            self.hybrid_canvas3,
-            self.hybrid_layout3,
-        ) = self.create_subplot("Hybrid Image", "frame_hybrid")
 
         # Add frames to the hybrid viewport layout
-        self.hybrid_viewport_grid_layout.addWidget(frame_image1, 0, 0)
-        self.hybrid_viewport_grid_layout.addWidget(frame_image2, 1, 0)
-        self.hybrid_viewport_grid_layout.addWidget(frame_hybrid, 0, 1, 2, 1)
+        self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.frame1, 0, 0)
+        self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.frame2, 1, 0)
+        self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.hybrid_frame, 0, 1, 2, 1)
         # Add the tab to the tab widget
         self.ui.image_workspace.addTab(self.hybrid_viewport, "")
         # Set the current tab index to the newly added tab

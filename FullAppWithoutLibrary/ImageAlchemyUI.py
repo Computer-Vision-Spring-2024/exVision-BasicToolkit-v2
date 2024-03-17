@@ -8,7 +8,7 @@ from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import QHeaderView
 
 from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
-from Classes.ExtendedWidgets.TabWidget import CustomTabWidget
+from Classes.ExtendedWidgets.CustomTabWidget import CustomTabWidget
 from ImageAlchemyBackend import Backend
 
 

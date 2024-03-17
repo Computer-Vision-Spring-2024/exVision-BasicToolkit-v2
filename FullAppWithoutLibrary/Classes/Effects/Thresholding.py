@@ -28,6 +28,7 @@ class Thresholding(QDoubleClickPushButton):
 
         # The group box that will contain the effect options
         self.thresholding_groupbox = ThresholdingGroupBox("Thresholding Settings")
+        self.thresholding_groupbox.setVisible(False)
         # Pass the Thresholding instance to the ThresholdingGroupbox class
         self.thresholding_groupbox.thresholding_effect = self
 

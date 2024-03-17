@@ -2,16 +2,11 @@ import numpy as np
 from Classes.EffectsWidgets.HybridGroupBox import HybridGroupBox
 from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
 from PyQt5.QtCore import pyqtSignal
+from Classes.ExtendedWidgets.CustomFrame import CustomFrame
 
 
 class HybridImages(QDoubleClickPushButton):
     _instance_counter = 0
-    # Signal to emit the first image after filtering
-    image1_updated = pyqtSignal(np.ndarray)
-    # Signal to emit the second image after filtering
-    image2_updated = pyqtSignal(np.ndarray)
-    # Signal to emit the resulted hybrid image
-    hybrid_updated = pyqtSignal(np.ndarray)
 
     def __init__(self, parent=None, *args, **kwargs):
         super(HybridImages, self).__init__(parent)
@@ -23,9 +18,16 @@ class HybridImages(QDoubleClickPushButton):
 
         # Associate the effect to a specific group box of multiple input methods to update the parameters of the effect
         self.hybrid_widget = HybridGroupBox(self.title)
+        self.hybrid_widget.setVisible(False)
         # The two input images
         self.image1 = None
         self.image2 = None
+        self.frame1= CustomFrame("Image One", "frame_image1")
+        self.frame2= CustomFrame("Image Two", "frame_image2")
+        self.hybrid_frame= CustomFrame("Hybrid Image", "frame_hybrid")
+        self.frame1.imgDropped.connect(self.set_image)
+        self.frame2.imgDropped.connect(self.set_image)
+        self.hybrid_frame.imgDropped.connect(self.set_image)
         # Dictionary of all the images that the user processed, the The key is the name of the file and the value is the processed img data
         self.processed_image_library = {}
         # Retrieve the cutoff frequencies of the filters from the spin boxes values
@@ -266,24 +268,24 @@ class HybridImages(QDoubleClickPushButton):
                 image1 = self.apply_filter(self.image1, self.high_pass_cutoff_freq, 0)
             hybrid = self.create_hybrid_img(self.image1, self.image2)
             # Emit the modified images
-            self.image1_updated.emit(image1)
-            self.image2_updated.emit(image2)
-            self.hybrid_updated.emit(hybrid)
+            self.frame1.Display_image(image1)
+            self.frame2.Display_image(image2)
+            self.hybrid_frame.Display_image(hybrid)
         elif not self.image1 is None:
             if self.hybrid_widget.radio_low_pass.isChecked():
                 image1 = self.apply_filter(self.image1, self.low_pass_cutoff_freq, 1)
-                self.image1_updated.emit(image1)
+                self.frame1.Display_image(image1)
             else:
                 image1 = self.apply_filter(self.image1, self.high_pass_cutoff_freq, 0)
-                self.image1_updated.emit(image1)
+                self.frame1.Display_image(image1)
 
         elif not self.image2 is None:
             if self.hybrid_widget.radio_low_pass.isChecked():
                 image2 = self.apply_filter(self.image2, self.low_pass_cutoff_freq, 1)
-                self.image2_updated.emit(image2)
+                self.frame2.Display_image(image2)
             else:
                 image2 = self.apply_filter(self.image2, self.high_pass_cutoff_freq, 0)
-                self.image2_updated.emit(image2)
+                self.frame2.Display_image(image2)
 
     def update_lowpass(self):
         """
@@ -294,8 +296,8 @@ class HybridImages(QDoubleClickPushButton):
         self.update_filter(
             self.image1,
             self.image2,
-            self.image1_updated,
-            self.image2_updated,
+            self.frame1,
+            self.frame2,
             self.low_pass_cutoff_freq,
             1,
         )
@@ -309,8 +311,8 @@ class HybridImages(QDoubleClickPushButton):
         self.update_filter(
             self.image2,
             self.image1,
-            self.image2_updated,
-            self.image1_updated,
+            self.frame2,
+            self.frame1,
             self.high_pass_cutoff_freq,
             0,
         )
@@ -319,8 +321,8 @@ class HybridImages(QDoubleClickPushButton):
         self,
         first_image,
         second_image,
-        first_emitted_img,
-        second_emitted_img,
+        first_frame,
+        second_frame,
         cutoff,
         flag,
     ):
@@ -332,14 +334,14 @@ class HybridImages(QDoubleClickPushButton):
                 If the modified spin box is that of the lowpass cutoff frequency then it is the upper image, if the modified spin box is that of the highpass cutoff then it is the lower image.
             - second_image: numpy.ndarray
                 If the modified spin box is that of the lowpass then it is the lower image, if the modified spin box is that of the highpass then it is the upper image.
-            - first_emitted_img
+            - first_frame
                 If the modified spin box is that of the lowpass, and the radio button which says that
-                the upper image is the lowpass filtered image is checked then it is the image1_updated signal
-                which emits the lowpass refiltered image, otherwise it is the image2_updated signal
+                the upper image is the lowpass filtered image is checked then it is self.frame1 object
+                in which the lowpass refiltered image will be displayed, otherwise it is self.frame2 object 
             - second_emitted_img
                 If the modified spin box is that of the highpass, and the radio button which says that
-                the upper image is the lowpass filtered image is checked then it is the image2_updated signal
-                which emits the highpass refiltered image, otherwise it is the image1_updated signal
+                the upper image is the lowpass filtered image is checked then it is self.frame2 object
+                in which the lowpass refiltered image will be displayed, otherwise it is self.frame1 object 
             - cutoff_freq: int
                 In a low pass filter, It is the radius of the unzeroed frequency circle, and In a high pass filter, It is the radius of the zeroed frequency circle, the circle is centered at the middel.
             - flag: 0 or 1
@@ -348,15 +350,15 @@ class HybridImages(QDoubleClickPushButton):
         if self.hybrid_widget.radio_low_pass.isChecked():
             if not first_image is None:
                 image = self.apply_filter(first_image, cutoff, flag)
-                first_emitted_img.emit(image)
+                first_frame.Display_image(image)
         else:
             if not second_image is None:
                 image = self.apply_filter(second_image, cutoff, flag)
-                second_emitted_img.emit(image)
+                second_frame.Display_image(image)
         # If both images are not None, reobtain the hybrid image
         if (not self.image1 is None) and (not self.image2 is None):
             hybrid = self.create_hybrid_img(self.image1, self.image2)
-            self.hybrid_updated.emit(hybrid)
+            self.hybrid_frame.Display_image(hybrid)
 
     def set_image(self, img, image1_flag, path):
         """
@@ -389,7 +391,7 @@ class HybridImages(QDoubleClickPushButton):
         """
         path = self.hybrid_widget.combobox.currentText()
         image = self.processed_image_library[path]
-        self.set_image(image, self.hybrid_widget.radio_img1.isChecked(), path)
+        self.set_image(image, self.hybrid_widget.checkbox_img1.isChecked(), path)
         self.hybrid_widget.combobox.currentIndexChanged.disconnect(
             self.upload_processed_image
         )

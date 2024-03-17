@@ -29,9 +29,9 @@ class HybridGroupBox(QGroupBox):
         combobox_layout = QHBoxLayout()
         combobox_label = QLabel("Our Images:")
         self.combobox = QComboBox()
-        self.radio_img1 = QtWidgets.QRadioButton("Image1")
+        self.checkbox_img1 = QtWidgets.QCheckBox("Image1")
         combobox_layout.addWidget(self.combobox)
-        combobox_layout.addWidget(self.radio_img1)
+        combobox_layout.addWidget(self.checkbox_img1)
 
         image2_layout = QHBoxLayout()
         image2_path_label = QLabel("Img2 Path:")

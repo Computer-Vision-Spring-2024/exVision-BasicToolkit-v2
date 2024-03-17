@@ -32,6 +32,7 @@ class Noise(QDoubleClickPushButton):
 
         # The group box that will contain the effect options
         self.noise_groupbox = NoiseGroupBox(self.title)
+        self.noise_groupbox.setVisible(False)
         """
         Description of the noise_groupbox:
             Associate the effect to a specific group box of multiple input methods

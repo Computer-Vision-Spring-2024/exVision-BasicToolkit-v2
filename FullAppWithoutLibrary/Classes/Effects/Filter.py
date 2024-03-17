@@ -28,6 +28,7 @@ class Filter(QDoubleClickPushButton):
         self.output_image = self.calculate_filter()
 
         self.filter_groupbox = FilterGroupBox(self.title)
+        self.filter_groupbox.setVisible(False)
 
         # Pass the Noise instance to the NoiseGroupBox class
         self.filter_groupbox.filter_effect = self

@@ -1,17 +1,17 @@
 import matplotlib.colors as mcolors
 import numpy as np
+from PyQt5.QtCore import pyqtSignal
+
 from Classes.EffectsWidgets.EdgeDetectorGroupBox import EdgeDetectorGroupBox
 from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
-from PyQt5.QtCore import pyqtSignal
 
 
 class EdgeDetector(QDoubleClickPushButton):
     _instance_counter = 0
     attributes_updated = pyqtSignal(np.ndarray)
 
-    def __init__(self, mainwindow, parent=None, *args, **kwargs):
+    def __init__(self, parent=None, *args, **kwargs):
         super(EdgeDetector, self).__init__(parent)
-        self.ui = mainwindow
         # For naming the instances of the effect
         EdgeDetector._instance_counter += 1
         self.title = f"Edge Detector.{EdgeDetector._instance_counter:03d}"
@@ -59,7 +59,7 @@ class EdgeDetector(QDoubleClickPushButton):
             self.edge_widget.edge_widget_combo_box.currentText()
         )
         self.apply_detector()
-        self.display_image()
+        self.attributes_updated.emit(self.edged_image)
 
     def set_working_image(self, image):
         self.current_image = image  # assign regradless it's colored or grayscale image
@@ -68,39 +68,6 @@ class EdgeDetector(QDoubleClickPushButton):
         ):  # if colored, make sure it's converted into grayscale.
             image = self.to_grayscale(image)
         self.current_working_image = image
-
-    def display_image(self):
-        """
-        Description:
-            - Displays an image in the main canvas.
-
-        Args:
-            - input_img: The input image to be displayed.
-            - output_img: The output image to be displayed.
-        """
-        # Clear the previous plot
-        self.ui.main_viewport_figure_canvas.figure.clear()
-
-        # Determine layout based on image dimensions
-        height, width, _ = self.current_image.shape
-        if width > height:  # If width is greater than the height
-            ax1 = self.ui.main_viewport_figure_canvas.figure.add_subplot(
-                211
-            )  # Vertical layout
-            ax2 = self.ui.main_viewport_figure_canvas.figure.add_subplot(212)
-        else:  # If height is significantly greater than width
-            ax1 = self.ui.main_viewport_figure_canvas.figure.add_subplot(
-                121
-            )  # Horizontal layout
-            ax2 = self.ui.main_viewport_figure_canvas.figure.add_subplot(122)
-
-        ax1.imshow(self.current_image, cmap="gray")
-        ax1.axis("off")
-        ax1.set_title("Input Image", color="white")
-
-        ax2.imshow(self.edged_image, cmap="gray")
-        ax2.axis("off")
-        ax2.set_title("Output Image", color="white")
 
     def to_grayscale(self, image):
         """
@@ -127,6 +94,8 @@ class EdgeDetector(QDoubleClickPushButton):
                 output_image
             )  # if the output contains directionality list, then include it in the plotting.
         self.edged_image = output_image
+
+        return self.edged_image
 
     def get_directed_image(self, image):
         """
