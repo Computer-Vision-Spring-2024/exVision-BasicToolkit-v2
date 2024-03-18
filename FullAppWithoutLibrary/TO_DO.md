@@ -18,11 +18,9 @@ The app UI meant to be similar to Photoshop UI. It has different sections, each 
 - When you expand or collapse the control panel, the expanded or the collapsed view of the effects menu appears for a second.
 - Themes Feature.
 
-### Image Processing Functions (IPF):
+### Digital Image Processing Functions (DIPFs):
 _That means "Is this effect was integrated in the app or not?"._
-- Draw "Histograms" and "Distribution Curve".
-- Equalizer Histograms
-- Transformation from color image to grayscale and plot of the RGB Histograms with its distribution function (Cumulative curve that you use it for mapping and histogram equalization).
+
 
 ### General:
 - Report of all the work.
@@ -43,7 +41,7 @@ _That means "Is this effect was integrated in the app or not?"._
 - Hybrid images: when you check the "image 01" radio button, the "low-pass" and "high-pass" goes unchecked.
 - Histogram Tabs
     - Openning multiple histogram tabs for the same image 
-    - Defining to which image does the tab belong to
+    - Defining to which image does the tab belong to in its title probably
 
 ## Done:
 
@@ -75,7 +73,7 @@ _That means "Is this effect was integrated in the app or not?"._
 - Make a separate file for the helper funcitons.
 
 
-### IPF:
+### Digital Image Processing Functions (DIPFs):
 - Add "Additive Noise":
     - Uniform
     - Gaussian
@@ -89,6 +87,9 @@ _That means "Is this effect was integrated in the app or not?"._
     - Roberts
     - Prewitt & canny
 - Equalize the image.
+- Draw "Histograms" and "Distribution Curve".
+- Equalizer Histograms
+- Transformation from color image to grayscale and plot of the RGB Histograms with its distribution function (Cumulative curve that you use it for mapping and histogram equalization).
 - Normalize the image.
 - Local & Global Thresholding.
 - Frequency domain filters (high-pass & low-pass).

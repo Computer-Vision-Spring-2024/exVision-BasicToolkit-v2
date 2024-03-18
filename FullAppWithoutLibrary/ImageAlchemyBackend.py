@@ -799,26 +799,31 @@ class Backend:
             l_channel_equalized = equalizer.General_Histogram_Equalization()
             self.output_image = np.dstack([l_channel_equalized, a_channel, b_channel])
             self.output_image = cv2.cvtColor(self.output_image, cv2.COLOR_LAB2RGB)
-            self.plot_equlaizer_histograms(l_channel_equalized)
+            self.plot_equlaizer_histograms(l_channel_equalized, 1)
         else:
             self.convert_to_grayscale()
             equalizer = Equalizer(self.grayscale_image)
             # self.ui.scroll_area_VLayout.insertWidget(0, equalizer.equalizer_groupbox)
             self.output_image = equalizer.General_Histogram_Equalization()
-            self.plot_equlaizer_histograms(self.output_image)
-
+            self.plot_equlaizer_histograms(self.output_image, 0)
+        # Repeated parts
         self.current_image.set_output_image(self.output_image)
         self.update_tree()
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    def plot_equlaizer_histograms(self, channel):
+    def plot_equlaizer_histograms(self, channel:np.ndarray, color: bool):
         # Main Viewport Page (First tab of the tab widget)
         new_tab = CanvasWidget()
+        # TODO: Add image name or code
         new_tab.setObjectName("Histogram_Tab")
         # Add the tab to the tab widget
         self.ui.image_workspace.addTab(new_tab, "Histogram && CDF - EQ. Channel")
-    
+        # Adjusting the axis title
+        # TODO: Add image name
+        if color:
+            name = "of L channel in CIELAB color space "
+        else : name = "of the Grey Levels "
 
         hist = Histogram_computation(channel)
         channel = np.squeeze(channel)
@@ -836,15 +841,15 @@ class Backend:
         ax2 = fig.add_subplot(312)
         ax3 = fig.add_subplot(313)
         # Adjust the vertical spacing between subplots
-        fig.subplots_adjust(hspace=0.5)
+        fig.subplots_adjust(hspace=0.6)
 
         ax1.hist(channel.flatten(), 256, [0,256], color='black', rwidth=0.75, alpha=0.6)
-        ax1.set_title("Equalized Histogram")
+        ax1.set_title(f"Equalized Histogram {name} ")
         ax2.plot(second_plot, color="red", label="Cumulative Distribution Normalized")
-        ax2.set_title(" Cumulative Distribution Normalized ")
+        ax2.set_title(f"Cumulative Distribution Normalized {name}")
         ax3.plot(hist, color="black", label=" Equalized Histogram and Cumulative Distribution")
         ax3.plot(cdf/255, color="red")
-        ax3.set_title("Equalized Histogram and Normalized Cumulative Distribution ")
+        ax3.set_title(f"Equalized Histogram and Normalized Cumulative Distribution {name}")
 
         # Redraw the canvas
         new_tab.canvas.figure = fig
