@@ -1,8 +1,14 @@
+import os
+# To prevent conflicts with pyqt6
+os.environ["QT_API"] = "PyQt5"
+# To solve the problem of the icons with relative
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 import webbrowser
 
 import matplotlib.pyplot as plt
 
-# in CMD: pip install qdarkstyle
+# in CMD: pip install qdarkstyle -> pip install pyqtdarktheme
 import qdarktheme
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -692,10 +698,11 @@ if __name__ == "__main__":
     # with open("Resources\BlackTheme.qss", "r") as f:
     #     stylesheet = f.read()
     #     app.setStyleSheet(stylesheet)
-    qdarktheme.setup_theme("dark")
+    
     ImgProcessor = QtWidgets.QMainWindow()
     ui = Ui_ImgProcessor()
     ui.setupUi(ImgProcessor)
     backend = Backend(ui)
     ImgProcessor.show()
+    qdarktheme.setup_theme("dark")
     sys.exit(app.exec_())

@@ -26,6 +26,7 @@ _That means "Is this effect was integrated in the app or not?"._
 
 ### General:
 - Report of all the work.
+- A requirements file
 - Check Threading.
 - Add a button to:
     - tick or untick the visibility of all added effects in the table widget.
@@ -40,6 +41,9 @@ _That means "Is this effect was integrated in the app or not?"._
 - Closing the hybrid viewport -> reshow.
 - You need to update the ui for the edge detecttion.
 - Hybrid images: when you check the "image 01" radio button, the "low-pass" and "high-pass" goes unchecked.
+- Histogram Tabs
+    - Openning multiple histogram tabs for the same image 
+    - Defining to which image does the tab belong to
 
 ## Done:
 

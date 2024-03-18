@@ -73,7 +73,7 @@ def min_max(image: np.ndarray) -> Tuple[float, float]:
 import numpy as np
 
 
-def colored_or_not(image: np.ndarray) -> bool:
+def _3d_colored_or_not(image: np.ndarray) -> bool:
     """
     Determine if an image is colored or grayscale.
 
@@ -100,6 +100,49 @@ def colored_or_not(image: np.ndarray) -> bool:
         return 0  # The image is grayscale
     else:
         return 1  # The image is colored
+    
+def Histogram_computation(Image: np.ndarray):
+        """
+        Descripion:
+            - Compute the histogram of an image for each color channel separately.
+
+        Returns:
+        - Histogram: numpy.ndarray
+            if Image is a 3D colored image: Histogram is a 2D array representing the histogram of the input image.
+            Each row corresponds to a pixel intensity (0 to 255),
+            and each column corresponds to a color channel (0 for red, 1 for green, 2 for blue).
+
+            If Image is a 3D or 2D Grey image: Histogram is a 1D array representing the same as above.
+        """
+        image_height = Image.shape[0]
+        image_width = Image.shape[1]
+        # Check if the image is grey, but still a 3d ndarray
+        _3d_color = _3d_colored_or_not(Image)
+        if not _3d_color:
+            # The image is a 2d ndarray, and supposed to be a grey image
+            image_channels = 1
+        else:
+            image_channels = Image.shape[2]
+        # Initialize the histogram array with zeros. The array has 256 rows, each corresponding to a pixel intensity value (0 to 255), and
+        # Image_Channels columns, each corresponding to a color channel (0 for red, 1 for green, 2 for blue). Each element in the array will store the count of pixels with a specific intensity
+        # value in a specific color channel.
+        Histogram = np.zeros([256, image_channels])
+
+        # Compute the histogram for each pixel in each channel
+        for x in range(0, image_height):
+            for y in range(0, image_width):
+                # Increment the count of pixels in the histogram for the same pixel intensity at position (x, y) in the image for the current color channel (c).
+                # This operation updates the histogram to track the number of pixels with a specific intensity value in each color channel separately.
+                # Image[x, y, c] => gets the intensity of the pixel at that position of the image which corresponds to row number of histogram.
+                # c => is the color channel which corresponds to the column number of the histogram,
+                if image_channels == 1:
+                    Histogram[Image[x, y], 0] += 1
+                else:
+                    for c in range(image_channels):
+                        Histogram[Image[x, y, c], c] += 1
+
+        return Histogram.astype(int)
+
 
 
 def BGR2LAB(image_array: np.ndarray) -> np.ndarray:
@@ -174,69 +217,28 @@ def BGR2LAB(image_array: np.ndarray) -> np.ndarray:
     return lab_image
 
 
-def Histogram_computation(Image: np.ndarray, color: bool):
-    """
-    Compute the histogram of an image for each color channel separately.
 
-    Parameters:
-    - Image: numpy.ndarray
-        The input image. Assumed to be in RGB format.
-
-    Returns:
-    - Histogram: numpy.ndarray
-        A 2D array representing the histogram of the input image.
-        Each row corresponds to a pixel intensity (0 to 255),
-        and each column corresponds to a color channel (0 for red, 1 for green, 2 for blue).
-    """
-    # Get the dimensions of the image
-    Image_Height = Image.shape[0]
-    Image_Width = Image.shape[1]
-    # Extend the dimensions if the image is a 2D grey scale image
-    if not color:
-        Image_Channels = 1
-        Image = np.expand_dims(Image, -1)
-    else:
-        Image_Channels = Image.shape[2]
-
-    # Initialize the histogram array with zeros. The array has 256 rows, each corresponding to a pixel intensity value (0 to 255), and
-    # Image_Channels columns, each corresponding to a color channel (0 for red, 1 for green, 2 for blue). Each element in the array will store the count of pixels with a specific intensity
-    # value in a specific color channel.
-    Histogram = np.zeros([256, Image_Channels], dtype=int)
-
-    # Compute the histogram for each pixel in each channel
-    for x in range(Image_Height):
-        for y in range(Image_Width):
-            for c in range(Image_Channels):
-                # Increment the count of pixels in the histogram for the same pixel intensity at position (x, y) in the image for the current color channel (c).
-                # This operation updates the histogram to track the number of pixels with a specific intensity value in each color channel separately.
-                # Image[x, y, c] => gets the intensity of the pixel at that position of the image which corresponds to row number of histogram.
-                # c => is the color channel which corresponds to the column number of the histogram,
-                intensity = Image[x, y, c]
-                Histogram[intensity, c] += 1
-
-    return Histogram
-
-
-def cumulative_summation(_2d_hist: np.ndarray) -> np.ndarray:
+def cumulative_summation(_1d_hist: np.ndarray) -> np.ndarray:
     """
     Description:
-        - Compute the cumulative sum of a 2D array.
+        - Compute the cumulative sum of a 1D array.
 
     Parameters:
-        - _2d_hist (np.ndarray): The input 2D frequency distribution array.
+        - _2d_hist (np.ndarray): The input 1D frequency distribution array.
 
     Returns:
-        - np.ndarray: The output 2D array after cumulative summation.
+        - np.ndarray: The output 1D array representing the cumulative summation.
     """
 
     # Initialize a zero array with the same shape as the input
-    _2d_cdf = np.zeros(_2d_hist.shape)
+    _1d_cdf = np.zeros(_1d_hist.shape)
 
     # Set the first element of the cumulative sum array to be the first element of the input array
-    _2d_cdf[0] = _2d_hist[0]
+    _1d_cdf[0] = _1d_hist[0]
 
     # Iterate over the input array, adding each element to the cumulative sum
-    for ind in range(1, _2d_hist.shape[0]):
-        _2d_cdf[ind] = _2d_cdf[ind - 1] + _2d_hist[ind]
+    for ind in range(1, _1d_hist.shape[0]):
+        _1d_cdf[ind] = _1d_cdf[ind - 1] + _1d_hist[ind]
+    
 
-    return _2d_cdf
+    return _1d_cdf

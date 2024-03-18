@@ -1,6 +1,6 @@
 import numpy as np
 from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
-from HelperFunctions import Histogram_computation
+from HelperFunctions import Histogram_computation, cumulative_summation
 from PyQt5.QtCore import pyqtSignal
 
 
@@ -17,29 +17,7 @@ class Equalizer(QDoubleClickPushButton):
         self.image = imageData
 
     # Methods
-    def cumulative_summation(self, _2d_hist: np.ndarray) -> np.ndarray:
-        """
-        Description:
-            - Compute the cumulative sum of a 2D array.
 
-        Parameters:
-            - _2d_hist (np.ndarray): The input 2D frequency distribution array.
-
-        Returns:
-            - np.ndarray: The output 2D array after cumulative summation.
-        """
-
-        # Initialize a zero array with the same shape as the input
-        _2d_cdf = np.zeros(_2d_hist.shape)
-
-        # Set the first element of the cumulative sum array to be the first element of the input array
-        _2d_cdf[0] = _2d_hist[0]
-
-        # Iterate over the input array, adding each element to the cumulative sum
-        for ind in range(1, _2d_hist.shape[0]):
-            _2d_cdf[ind] = _2d_cdf[ind - 1] + _2d_hist[ind]
-
-        return _2d_cdf
 
     def General_Histogram_Equalization(self):
         """
@@ -53,10 +31,10 @@ class Equalizer(QDoubleClickPushButton):
         with the other channels to produce the outpub contrast-enhanced image.
         """
         # Calculate histogram of the input channel
-        hist = Histogram_computation(self.image, 0)
+        hist = Histogram_computation(self.image)
 
         # Calculate cumulative distribution function (CDF) of the histogram
-        cdf = self.cumulative_summation(hist)
+        cdf = cumulative_summation(hist)
 
         # Normalize the CDF
         cdf_normalized = cdf * hist.max() / cdf.max()
@@ -78,5 +56,6 @@ class Equalizer(QDoubleClickPushButton):
         # To clarify, now cdf contains the equalized values and need to be placed at the correct indices
         # Each value in the channel changes to its equivalent value from cdf
         channel_eq = cdf[self.image]
+        channel_eq = np.squeeze(channel_eq)
 
         return channel_eq

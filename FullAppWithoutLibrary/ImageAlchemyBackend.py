@@ -30,7 +30,7 @@ from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
 from HelperFunctions import (
     BGR2LAB,
     Histogram_computation,
-    colored_or_not,
+    _3d_colored_or_not,
     cumulative_summation,
 )
 
@@ -140,7 +140,7 @@ class Backend:
             {
                 "name": "Histograms and Distribution Curve",
                 "icon": "Resources/Icons/Effects/histogram.png",
-                "function": self.plot_histogram_in_new_tab,
+                "function": self.plot_histogram_and_CDF_in_new_tab,
             },
             {
                 "name": "Equalizer",
@@ -633,7 +633,7 @@ class Backend:
 
         Returns:
         - numpy.ndarray
-            The grayscale image.
+            The 2D grayscale image.
         """
         # Get the dimensions of the image
         height, width, _ = self.current_image_data.shape
@@ -788,7 +788,7 @@ class Backend:
         print("Histograms and Distribution Curve")
 
     def equalizer(self):
-        self.is_color = colored_or_not(self.current_image_data)
+        self.is_color = _3d_colored_or_not(self.current_image_data)
         if self.is_color:
             img = cv2.cvtColor(self.current_image_data, cv2.COLOR_RGB2BGR)
             lab_img = BGR2LAB(img)
@@ -799,13 +799,13 @@ class Backend:
             l_channel_equalized = equalizer.General_Histogram_Equalization()
             self.output_image = np.dstack([l_channel_equalized, a_channel, b_channel])
             self.output_image = cv2.cvtColor(self.output_image, cv2.COLOR_LAB2RGB)
-            # self.plot_equlaizer_histograms(l_channel_equalized)
+            self.plot_equlaizer_histograms(l_channel_equalized)
         else:
             self.convert_to_grayscale()
             equalizer = Equalizer(self.grayscale_image)
-            self.ui.scroll_area_VLayout.insertWidget(0, equalizer.equalizer_groupbox)
+            # self.ui.scroll_area_VLayout.insertWidget(0, equalizer.equalizer_groupbox)
             self.output_image = equalizer.General_Histogram_Equalization()
-            # self.plot_equlaizer_histograms(self.output_image)
+            self.plot_equlaizer_histograms(self.output_image)
 
         self.current_image.set_output_image(self.output_image)
         self.update_tree()
@@ -817,29 +817,34 @@ class Backend:
         new_tab = CanvasWidget()
         new_tab.setObjectName("Histogram_Tab")
         # Add the tab to the tab widget
-        self.ui.image_workspace.addTab(new_tab, "Histogram && CDF")
+        self.ui.image_workspace.addTab(new_tab, "Histogram && CDF - EQ. Channel")
+    
 
-        # Calculate the histogram
-        # hist = Histogram_computation(channel, 1)
-
-        hist, bins = np.histogram(channel.flatten(), 256, [0, 256])
+        hist = Histogram_computation(channel)
         channel = np.squeeze(channel)
-        cdf = cumulative_summation(channel)
-        second_plot = cdf[np.where(cdf != 0)[0]]
-        second_plot = second_plot.flatten()
+        cdf = cumulative_summation(hist)
+        cdf_max = cdf.max() + 1E10-5
+        cdf_normalized = cdf * float(hist.max()) / cdf_max
+        second_plot = cdf_normalized[np.where(cdf != 0)[0]]
+        second_plot = cdf
 
         # Clear the previous plot
         new_tab.canvas.figure.clear()
-        fig = Figure(figsize=(12, 6))
+        fig = Figure(figsize=(12, 12))
 
-        ax1 = fig.add_subplot(111)
-        ax2 = fig.add_subplot(121)
-        ax3 = fig.add_subplot(131)
+        ax1 = fig.add_subplot(311)
+        ax2 = fig.add_subplot(312)
+        ax3 = fig.add_subplot(313)
+        # Adjust the vertical spacing between subplots
+        fig.subplots_adjust(hspace=0.5)
 
-        ax1.plot(hist, color="blue", label="Original Histogram")
-        ax2.plot(second_plot, color="red", label="Cumulative Distribution")
-        ax3.plot(hist, color="blue")
-        ax3.plot(second_plot, color="red")
+        ax1.hist(channel.flatten(), 256, [0,256], color='black', rwidth=0.75, alpha=0.6)
+        ax1.set_title("Equalized Histogram")
+        ax2.plot(second_plot, color="red", label="Cumulative Distribution Normalized")
+        ax2.set_title(" Cumulative Distribution Normalized ")
+        ax3.plot(hist, color="black", label=" Equalized Histogram and Cumulative Distribution")
+        ax3.plot(cdf/255, color="red")
+        ax3.set_title("Equalized Histogram and Normalized Cumulative Distribution ")
 
         # Redraw the canvas
         new_tab.canvas.figure = fig
@@ -865,77 +870,55 @@ class Backend:
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    def Histogram_computation(self):
-        """
-        Descripion:
-            - Compute the histogram of an image for each color channel separately.
+    
 
-        Returns:
-        - Histogram: numpy.ndarray
-            A 2D array representing the histogram of the input image.
-            Each row corresponds to a pixel intensity (0 to 255),
-            and each column corresponds to a color channel (0 for red, 1 for green, 2 for blue).
-        """
-        image_height = self.current_image_data.shape[0]
-        image_width = self.current_image_data.shape[1]
-        # Extend the dimentions if the image is a 2D grey scale image
-        color = np.array_equal(
-            self.current_image_data[:, :, 0], self.current_image_data[:, :, 1]
-        ) and np.array_equal(
-            self.current_image_data[:, :, 1], self.current_image_data[:, :, 2]
-        )
-        if not color:
-            image_channels = 1
-            self.current_image_data = np.expand_dims(self.current_image_data, -1)
-        else:
-            image_channels = self.current_image_data.shape[2]
-
-        # Initialize the histogram array with zeros. The array has 256 rows, each corresponding to a pixel intensity value (0 to 255), and
-        # Image_Channels columns, each corresponding to a color channel (0 for red, 1 for green, 2 for blue). Each element in the array will store the count of pixels with a specific intensity
-        # value in a specific color channel.
-        Histogram = np.zeros([256, image_channels])
-
-        # Compute the histogram for each pixel in each channel
-        for x in range(0, image_height):
-            for y in range(0, image_width):
-                for c in range(0, image_channels):
-                    # Increment the count of pixels in the histogram for the same pixel intensity at position (x, y) in the image for the current color channel (c).
-                    # This operation updates the histogram to track the number of pixels with a specific intensity value in each color channel separately.
-                    # Image[x, y, c] => gets the intensity of the pixel at that position of the image which corresponds to row number of histogram.
-                    # c => is the color channel which corresponds to the column number of the histogram,
-                    Histogram[self.current_image_data[x, y, c], c] += 1
-
-        return Histogram.astype(int)
-
-    def plot_histogram_in_new_tab(self):
-
+    def plot_histogram_and_CDF_in_new_tab(self ):
         # Main Viewport Page (First tab of the tab widget)
         new_tab = CanvasWidget()
         new_tab.setObjectName("Histogram_Tab")
         # Add the tab to the tab widget
-        self.ui.image_workspace.addTab(new_tab, "Histogram")
-
+        self.ui.image_workspace.addTab(new_tab, "Histogram && CDF")
+        # Set the current tab index to the newly added tab
+        new_tab_index = self.ui.image_workspace.count() - 1
+        self.ui.image_workspace.setCurrentIndex(new_tab_index)
         # Calculate the histogram
-        histogram = self.Histogram_computation()
-
+        histogram = Histogram_computation(self.current_image_data)
         # Clear the previous plot
         new_tab.canvas.figure.clear()
-        fig = Figure(figsize=(12, 6))
-
-        ax = fig.add_subplot(111)
-
-        colors = ["blue", "green", "red"]
-        for i in range(3):
-            # plot the whole rows and columns data for each color channel
-            ax.plot(histogram[:, i], color=colors[i], label=colors[i])
-
-        ax.set_title("Histogram of Each Color Channel")
-        ax.set_xlabel("Pixel Intensity")
-        ax.set_ylabel("Frequency")
-        ax.legend()
+        fig = Figure(figsize=(12, 10))
+        ax_hist = fig.add_subplot(211)
+        ax_cdf = fig.add_subplot(212)
+        # TODO: repeated
+        colors = ["red", "green", "blue"] # Red, Green, Blue as the colored image is converted to RGB -> in loading the image function
+        single_channel_color = ["black"]
+        if _3d_colored_or_not(self.current_image_data):
+            for i, color in enumerate(colors):
+                ax_hist.hist(self.current_image_data[:,:,i].flatten(), 256, [0,256], color=color, rwidth=0.75, alpha=0.6)
+                hist_color = histogram[:,i]
+                cdf = cumulative_summation(hist_color)
+                cdf_max = cdf.max() + 1E10-5
+                cdf_normalized = cdf * float(histogram.max()) / cdf_max
+                ax_cdf.plot(cdf_normalized, color=colors[i])
+        else: 
+            ax_hist.hist(self.current_image_data.flatten(),256, [0,256], color=single_channel_color[0], label="grey levels",rwidth=0.75)
+            cdf = cumulative_summation(histogram)
+            cdf_max = cdf.max() + 1E10-5 # TO handle the case of a totally black image
+            cdf_normalized = cdf * float(histogram.max()) / cdf_max
+            ax_cdf.plot(cdf_normalized, color=single_channel_color[0])
+        ax_hist.set_title("Histogram of Each Color Channel")
+        ax_cdf.set_title("The CDF of Each Color Channel")
+        ax_hist.set_xlabel("Pixel Intensity")
+        ax_cdf.set_xlabel("Pixel Intensity")
+        ax_hist.set_ylabel("Frequency")
+        ax_cdf.set_ylabel("Normalized CDF")
+        ax_hist.legend()
         # Redraw the canvas
         new_tab.canvas.figure = fig
         new_tab.canvas.draw()
+        # TODO: repeated code from nada
+        # Set the current tab index to the newly added tab
+        new_tab_index = self.ui.image_workspace.count() - 1
+        self.ui.image_workspace.setCurrentIndex(new_tab_index)
 
     def local_and_global_thresholding(self):
         """
