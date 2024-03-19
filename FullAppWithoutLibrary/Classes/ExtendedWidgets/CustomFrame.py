@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QFrame
 class CustomFrame(QFrame):
     imgDropped = pyqtSignal(np.ndarray, int, str)
 
-    def __init__(self, title, frame_name, parent=None):
+    def __init__(self, title, frame_name, flag, parent=None):
         super(CustomFrame, self).__init__(parent)
         self.setAcceptDrops(True)
 
@@ -20,7 +20,7 @@ class CustomFrame(QFrame):
         self.canvas = None
         self.title = title
         self.frame_name = frame_name
-        self.flag = self.determine_flag()
+        self.flag = flag
         self.setup_canvas()
 
     def dragEnterEvent(self, event):
@@ -49,15 +49,6 @@ class CustomFrame(QFrame):
                         print("Not an image file:", self.dropped_path)
             except Exception as e:
                 print("Error accessing file:", e)
-
-    def determine_flag(self):
-        last_letter = self.frame_name[-1]
-        if last_letter == "1":
-            return 1
-        elif last_letter == "2":
-            return 0
-        else:
-            return 3
 
     def setup_canvas(self):
         """
