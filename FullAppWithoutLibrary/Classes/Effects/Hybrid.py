@@ -18,13 +18,12 @@ class HybridImages(QDoubleClickPushButton):
 
         # Associate the effect to a specific group box of multiple input methods to update the parameters of the effect
         self.hybrid_widget = HybridGroupBox(self.title)
-        self.hybrid_widget.setVisible(False)
         # The two input images
         self.image1 = None
         self.image2 = None
-        self.frame1= CustomFrame("Image One", "frame_image1")
-        self.frame2= CustomFrame("Image Two", "frame_image2")
-        self.hybrid_frame= CustomFrame("Hybrid Image", "frame_hybrid")
+        self.frame1= CustomFrame("Image One", "frame_image1", 1)
+        self.frame2= CustomFrame("Image Two", "frame_image2", 0)
+        self.hybrid_frame= CustomFrame("Hybrid Image", "frame_hybrid",3)
         self.frame1.imgDropped.connect(self.set_image)
         self.frame2.imgDropped.connect(self.set_image)
         self.hybrid_frame.imgDropped.connect(self.set_image)
@@ -250,7 +249,7 @@ class HybridImages(QDoubleClickPushButton):
         # Add the two filtered images
         hybrid_img = low_pass_filtered_img + high_pass_filtered_img
         # If pixel value is greater than 255 modify it to 255
-        hybrid_img[hybrid_img > 255] = 255
+        # hybrid_img[hybrid_img > 255] = 255
         return hybrid_img
 
     def update_filtering(self):
