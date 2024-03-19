@@ -183,7 +183,8 @@ class Filter(QDoubleClickPushButton):
         y_squared = y**2
 
         kernel = np.exp(-(x_squared + y_squared) / (2 * sigma**2))
-        kernel /= np.sum(kernel)  # for normalization
+        # kernel /= np.sum(kernel)  # for normalization
+        kernel /= 2 * np.pi * (sigma**2)  # for normalization
 
         return kernel
 
