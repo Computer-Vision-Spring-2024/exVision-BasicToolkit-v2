@@ -402,7 +402,7 @@ class Backend:
                 self.hybrid_object.hybrid_widget.setVisible(True)
                 # Expand the scroll area to sea the group box
                 self.ui.toggle_effect_bar(True)
-                
+
             else:
                 self.hide_all_groupboxes()
                 if item.childCount() > 0:
@@ -495,7 +495,6 @@ class Backend:
 
         return grayscale_image
 
-
     def display_image(self, input_img, output_img):
         """
         Description:
@@ -510,7 +509,7 @@ class Backend:
 
         # Determine layout based on image dimensions
         height, width, _ = input_img.shape
-        if width > height:  # If width is greater than the height
+        if (width - height) > 300:  # If width is greater than the height
             ax1 = self.ui.main_viewport_figure_canvas.figure.add_subplot(
                 211
             )  # Vertical layout
@@ -531,7 +530,7 @@ class Backend:
 
         # Reduce the white margins
         self.ui.main_viewport_figure_canvas.figure.subplots_adjust(
-            left=0, right=1, bottom=0, top=1
+            left=0, right=1, bottom=0.05, top=0.95
         )
 
         # Redraw the canvas
@@ -635,6 +634,12 @@ class Backend:
         - numpy.ndarray
             The 2D grayscale image.
         """
+        if self.current_image_data is None:
+            self.show_message(
+                "Error", "Please load an image first.", QMessageBox.Critical
+            )
+            return
+
         # Get the dimensions of the image
         height, width, _ = self.current_image_data.shape
 
@@ -812,7 +817,7 @@ class Backend:
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    def plot_equlaizer_histograms(self, channel:np.ndarray, color: bool):
+    def plot_equlaizer_histograms(self, channel: np.ndarray, color: bool):
         # Main Viewport Page (First tab of the tab widget)
         new_tab = CanvasWidget()
         # TODO: Add image name or code
@@ -823,12 +828,13 @@ class Backend:
         # TODO: Add image name
         if color:
             name = "of L channel in CIELAB color space "
-        else : name = "of the Grey Levels "
+        else:
+            name = "of the Grey Levels "
 
         hist = Histogram_computation(channel)
         channel = np.squeeze(channel)
         cdf = cumulative_summation(hist)
-        cdf_max = cdf.max() + 1E10-5
+        cdf_max = cdf.max() + 1e10 - 5
         cdf_normalized = cdf * float(hist.max()) / cdf_max
         second_plot = cdf_normalized[np.where(cdf != 0)[0]]
         second_plot = cdf
@@ -843,13 +849,21 @@ class Backend:
         # Adjust the vertical spacing between subplots
         fig.subplots_adjust(hspace=0.6)
 
-        ax1.hist(channel.flatten(), 256, [0,256], color='black', rwidth=0.75, alpha=0.6)
+        ax1.hist(
+            channel.flatten(), 256, [0, 256], color="black", rwidth=0.75, alpha=0.6
+        )
         ax1.set_title(f"Equalized Histogram {name} ")
         ax2.plot(second_plot, color="red", label="Cumulative Distribution Normalized")
         ax2.set_title(f"Cumulative Distribution Normalized {name}")
-        ax3.plot(hist, color="black", label=" Equalized Histogram and Cumulative Distribution")
-        ax3.plot(cdf/255, color="red")
-        ax3.set_title(f"Equalized Histogram and Normalized Cumulative Distribution {name}")
+        ax3.plot(
+            hist,
+            color="black",
+            label=" Equalized Histogram and Cumulative Distribution",
+        )
+        ax3.plot(cdf / 255, color="red")
+        ax3.set_title(
+            f"Equalized Histogram and Normalized Cumulative Distribution {name}"
+        )
 
         # Redraw the canvas
         new_tab.canvas.figure = fig
@@ -875,9 +889,7 @@ class Backend:
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    
-
-    def plot_histogram_and_CDF_in_new_tab(self ):
+    def plot_histogram_and_CDF_in_new_tab(self):
         # Main Viewport Page (First tab of the tab widget)
         new_tab = CanvasWidget()
         new_tab.setObjectName("Histogram_Tab")
@@ -894,20 +906,40 @@ class Backend:
         ax_hist = fig.add_subplot(211)
         ax_cdf = fig.add_subplot(212)
         # TODO: repeated
-        colors = ["red", "green", "blue"] # Red, Green, Blue as the colored image is converted to RGB -> in loading the image function
+        colors = [
+            "red",
+            "green",
+            "blue",
+        ]  # Red, Green, Blue as the colored image is converted to RGB -> in loading the image function
         single_channel_color = ["black"]
         if _3d_colored_or_not(self.current_image_data):
             for i, color in enumerate(colors):
-                ax_hist.hist(self.current_image_data[:,:,i].flatten(), 256, [0,256], color=color, rwidth=0.75, alpha=0.6)
-                hist_color = histogram[:,i]
+                ax_hist.hist(
+                    self.current_image_data[:, :, i].flatten(),
+                    256,
+                    [0, 256],
+                    color=color,
+                    rwidth=0.75,
+                    alpha=0.6,
+                )
+                hist_color = histogram[:, i]
                 cdf = cumulative_summation(hist_color)
-                cdf_max = cdf.max() + 1E10-5
+                cdf_max = cdf.max() + 1e10 - 5
                 cdf_normalized = cdf * float(histogram.max()) / cdf_max
                 ax_cdf.plot(cdf_normalized, color=colors[i])
-        else: 
-            ax_hist.hist(self.current_image_data.flatten(),256, [0,256], color=single_channel_color[0], label="grey levels",rwidth=0.75)
+        else:
+            ax_hist.hist(
+                self.current_image_data.flatten(),
+                256,
+                [0, 256],
+                color=single_channel_color[0],
+                label="grey levels",
+                rwidth=0.75,
+            )
             cdf = cumulative_summation(histogram)
-            cdf_max = cdf.max() + 1E10-5 # TO handle the case of a totally black image
+            cdf_max = (
+                cdf.max() + 1e10 - 5
+            )  # TO handle the case of a totally black image
             cdf_normalized = cdf * float(histogram.max()) / cdf_max
             ax_cdf.plot(cdf_normalized, color=single_channel_color[0])
         ax_hist.set_title("Histogram of Each Color Channel")
@@ -1084,7 +1116,9 @@ class Backend:
         # Add frames to the hybrid viewport layout
         self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.frame1, 0, 0)
         self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.frame2, 1, 0)
-        self.hybrid_viewport_grid_layout.addWidget(self.hybrid_object.hybrid_frame, 0, 1, 2, 1)
+        self.hybrid_viewport_grid_layout.addWidget(
+            self.hybrid_object.hybrid_frame, 0, 1, 2, 1
+        )
         # Add the tab to the tab widget
         self.ui.image_workspace.addTab(self.hybrid_viewport, "")
         # Set the current tab index to the newly added tab

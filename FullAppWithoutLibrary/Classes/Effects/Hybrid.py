@@ -183,15 +183,15 @@ class HybridImages(QDoubleClickPushButton):
                 mapped_column_index = column / width_scaling_factor
                 # Get the four closest points to the calculated mapped point
                 r1, c1 = int(mapped_row_index), int(mapped_column_index)
-                if c1 + 1 < new_width:
+                if c1 + 1 < width:
                     r2, c2 = r1, c1 + 1
                 else:
                     r2, c2 = r1, c1
-                if r1 + 1 < new_height:
+                if r1 + 1 < height:
                     r3, c3 = r1 + 1, c1
                 else:
                     r3, c3 = r1, c1
-                if r1 + 1 < new_height and c1 + 1 < new_width:
+                if r1 + 1 < height and c1 + 1 < width:
                     r4, c4 = r1 + 1, c1 + 1
                 else:
                     r4, c4 = r1, c1

@@ -1,4 +1,5 @@
 import os
+
 # To prevent conflicts with pyqt6
 os.environ["QT_API"] = "PyQt5"
 # To solve the problem of the icons with relative
@@ -698,7 +699,6 @@ if __name__ == "__main__":
     # with open("Resources\BlackTheme.qss", "r") as f:
     #     stylesheet = f.read()
     #     app.setStyleSheet(stylesheet)
-    
     ImgProcessor = QtWidgets.QMainWindow()
     ui = Ui_ImgProcessor()
     ui.setupUi(ImgProcessor)

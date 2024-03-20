@@ -55,6 +55,8 @@ class FilterGroupBox(QGroupBox):
 
     def update_filter_options(self, index):
         if index == 2:  # Gaussian
-            self.sigma_layout.setEnabled(False)  # Hide sigma layout
+            self.sigma_spinbox.setVisible(True)
+            self.sigma_label.setVisible(True)
         else:  # Mean or Median
-            self.sigma_layout.setEnabled(True)  # Show sigma layout
+            self.sigma_spinbox.setVisible(False)
+            self.sigma_label.setVisible(False)

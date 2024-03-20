@@ -41,6 +41,10 @@ class Filter(QDoubleClickPushButton):
             self.update_attributes
         )
         self.filter_groupbox.sigma_spinbox.valueChanged.connect(self.update_attributes)
+        # Connect the signal of the combobox to update_filter_options method in FilterGroupBox
+        self.filter_groupbox.filter_type_comb.currentIndexChanged.connect(
+            self.filter_groupbox.update_filter_options
+        )
         # Store the attributes of the effect to be easily stored in the images instances.
         self.attributes = self.attributes_dictionary()
 
@@ -85,15 +89,13 @@ class Filter(QDoubleClickPushButton):
     def to_grayscale(self):
         """
         Descripion:
-            - Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
+            -   Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
 
         Parameters:
-        - image: numpy.ndarray
-            The input image.
+            -   [numpy.ndarray]: The input image.
 
         Returns:
-        - numpy.ndarray
-            The grayscale image.
+            -   [numpy.ndarray]: The grayscale image.
         """
         # Get the dimensions of the image
         height, width, _ = self.image.shape
@@ -109,61 +111,45 @@ class Filter(QDoubleClickPushButton):
 
         return grayscale_image
 
-    def mean_filter(self):
+    def _pad_image(self):
         """
         Description:
-            - Applies a mean filter to an image.
-
-        Args:
-            - kernel_size: Size of the square kernel (e.g., 3x3).
+            - Pads the grayscale image with zeros.
 
         Returns:
-            - A numpy array representing the filtered image.
+            - [numpy.ndarray]: A padded grayscale image.
         """
         pad_width = self.kernel_size // 2
-        padded_image = np.pad(
+        return np.pad(
             self.grayscale_image,
             ((pad_width, pad_width), (pad_width, pad_width)),
             mode="edge",
         )
-        mean_filtered_image = np.zeros_like(self.grayscale_image)
+
+    def _apply_filter(self, filter_function):
+        """
+        Description:
+            -   Applies a filter to an image.
+
+        Args:
+            -   filter_function: A function that takes a window and returns a value.
+                This function is determined based on the type of filter to be applied.
+                It is either mean, median or gaussian.
+
+        Returns:
+            -  [numpy ndarray]: A filtered image using a filter function.
+        """
+        padded_image = self._pad_image()
+        filtered_image = np.zeros_like(self.grayscale_image)
         for i in range(self.grayscale_image.shape[0]):
             for j in range(self.grayscale_image.shape[1]):
                 window = padded_image[
                     i : i + self.kernel_size, j : j + self.kernel_size
                 ]
-                mean_filtered_image[i, j] = np.mean(window)
+                filtered_image[i, j] = filter_function(window)
+        return filtered_image
 
-        return mean_filtered_image
-
-    def median_filter(self):
-        """
-        Description:
-            - Applies a median filter to an image.
-
-        Args:
-            - kernel_size: Size of the square kernel (e.g., 3x3).
-
-        Returns:
-            - A numpy array representing the filtered image.
-        """
-        pad_width = self.kernel_size // 2
-        padded_image = np.pad(
-            self.grayscale_image,
-            ((pad_width, pad_width), (pad_width, pad_width)),
-            mode="edge",
-        )
-        median_filtered_image = np.zeros_like(self.grayscale_image)
-        for i in range(self.grayscale_image.shape[0]):
-            for j in range(self.grayscale_image.shape[1]):
-                window = padded_image[
-                    i : i + self.kernel_size, j : j + self.kernel_size
-                ]
-                median_filtered_image[i, j] = np.median(window)
-
-        return median_filtered_image
-
-    def gaussian_filter_kernel(self, kernel_size, sigma):
+    def _gaussian_filter_kernel(self, kernel_size, sigma):
         """
         Description:
             - Generates a Gaussian filter kernel.
@@ -183,10 +169,30 @@ class Filter(QDoubleClickPushButton):
         y_squared = y**2
 
         kernel = np.exp(-(x_squared + y_squared) / (2 * sigma**2))
-        # kernel /= np.sum(kernel)  # for normalization
-        kernel /= 2 * np.pi * (sigma**2)  # for normalization
+        kernel /= np.sum(kernel)
+        # kernel /= 2 * np.pi * (sigma**2)  # for normalization
 
         return kernel
+
+    def mean_filter(self):
+        """
+        Description:
+            -   Applies a mean filter to an image.
+
+        Returns:
+            -   [numpy ndarray]: A filtered image using a mean filter.
+        """
+        return self._apply_filter(np.mean)
+
+    def median_filter(self):
+        """
+        Description:
+            -   Applies a median filter to an image.
+
+        Returns:
+            -   [numpy ndarray]: A filtered image using a median filter.
+        """
+        return self._apply_filter(np.median)
 
     def gaussian_filter(self):
         """
@@ -197,7 +203,7 @@ class Filter(QDoubleClickPushButton):
             - A numpy array representing the filtered image.
         """
         rows, cols = self.grayscale_image.shape[:2]
-        kernel = self.gaussian_filter_kernel(self.kernel_size, self.sigma)
+        kernel = self._gaussian_filter_kernel(self.kernel_size, self.sigma)
         pad_width = kernel.shape[0] // 2
         padded_image = np.pad(
             self.grayscale_image,

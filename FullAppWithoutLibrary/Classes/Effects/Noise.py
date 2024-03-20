@@ -20,9 +20,9 @@ class Noise(QDoubleClickPushButton):
         # Attributes
         self.type = type  # The type of noise that will be generated
         self.val01 = (
-            val01  # The lower limit, or salt, or the mean depending on the noise type
+            val01  # The lower limit, or pepper, or the mean depending on the noise type
         )
-        self.val02 = val02  # The upper limit, or pepper, or the standard deviation depending on the noise type
+        self.val02 = val02  # The upper limit, or salt, or the standard deviation depending on the noise type
         self.image = imageData  # The image that the noise will be added to
         self.grayscale_image = self.to_grayscale()
         self.shape = self.grayscale_image.shape  # The shape of the grayscale image
@@ -155,6 +155,6 @@ class Noise(QDoubleClickPushButton):
         """
         noise = np.random.uniform(0, 1, size=self.grayscale_image.shape)
         self.output_image = self.grayscale_image.copy()
-        self.output_image[noise < self.val01] = 0  # Black pixels (salt)
-        self.output_image[noise > 1 - self.val02] = 255  # White pixels (pepper)
+        self.output_image[noise < self.val01] = 0  # Black pixels (pepper)
+        self.output_image[noise > 1 - self.val02] = 255  # White pixels (salt)
         return self.output_image
