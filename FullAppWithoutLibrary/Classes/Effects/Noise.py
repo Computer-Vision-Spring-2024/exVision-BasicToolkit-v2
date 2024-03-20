@@ -73,8 +73,8 @@ class Noise(QDoubleClickPushButton):
             - Updates the parameters of the noise effect depending on
                 the associated effect groupbox.
         """
-        self.val01 = self.noise_groupbox.lower_spinbox.value() / 100
-        self.val02 = self.noise_groupbox.upper_spinbox.value() / 100
+        self.val01 = self.noise_groupbox.lower_spinbox.value() / 50
+        self.val02 = self.noise_groupbox.upper_spinbox.value() / 50
         self.type = self.noise_groupbox.noise_type_comb.currentText()
         self.output_image = self.calculate_noise()
         self.attibutes = self.attributes_dictionary()

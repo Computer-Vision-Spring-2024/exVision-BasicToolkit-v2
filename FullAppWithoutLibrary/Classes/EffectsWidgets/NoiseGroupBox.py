@@ -76,8 +76,8 @@ class NoiseGroupBox(QGroupBox):
             self.lower_spinbox.setRange(0, 100)
             self.upper_spinbox.setRange(0, 100)
         elif index == 2:  # Salt & Pepper
-            self.lower_label.setText("Salt")
-            self.upper_label.setText("Pepper")
+            self.lower_label.setText("Pepper")
+            self.upper_label.setText("Salt")
             self.lower_slider.setRange(0, 100)
             self.upper_slider.setRange(0, 100)
             self.lower_spinbox.setRange(0, 100)

@@ -1,7 +1,8 @@
 import numpy as np
+from PyQt5.QtCore import pyqtSignal
+
 from Classes.EffectsWidgets.FilterGroupBox import FilterGroupBox
 from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
-from PyQt5.QtCore import pyqtSignal
 
 
 class Filter(QDoubleClickPushButton):
@@ -169,8 +170,8 @@ class Filter(QDoubleClickPushButton):
         y_squared = y**2
 
         kernel = np.exp(-(x_squared + y_squared) / (2 * sigma**2))
-        kernel /= np.sum(kernel)
-        # kernel /= 2 * np.pi * (sigma**2)  # for normalization
+        # kernel /= np.sum(kernel)
+        kernel /= 2 * np.pi * (sigma**2)  # for normalization
 
         return kernel
 
@@ -218,3 +219,55 @@ class Filter(QDoubleClickPushButton):
                 gaussian_filtered_image[i, j] = np.sum(window * kernel)
 
         return gaussian_filtered_image
+
+    # def gaussian_filter(self):
+    #     """
+    #     Description:
+    #         Applies a Gaussian filter to an image using separable convolution.
+
+    #     Returns:
+    #         A numpy array representing the filtered image.
+    #     """
+    #     rows, cols = self.grayscale_image.shape[:2]
+    #     kernel = self._gaussian_filter_kernel_1d(self.kernel_size, self.sigma)
+    #     pad_width = kernel.shape[0] // 2
+    #     padded_image = np.pad(
+    #         self.grayscale_image,
+    #         ((pad_width, pad_width), (pad_width, pad_width)),
+    #         mode="edge",
+    #     )
+    #     # Apply the filter along the rows
+    #     filtered_image_temp = np.zeros_like(padded_image)
+    #     for i in range(rows):
+    #         for j in range(cols):
+    #             window = padded_image[i, j : j + kernel.shape[0]]
+    #             filtered_image_temp[i, j] = np.sum(window * kernel)
+
+    #     # Apply the filter along the columns
+    #     gaussian_filtered_image = np.zeros_like(self.grayscale_image)
+    #     for j in range(cols):
+    #         for i in range(rows):
+    #             window = filtered_image_temp[i : i + kernel.shape[0], j]
+    #             gaussian_filtered_image[i, j] = np.sum(window * kernel)
+
+    #     return gaussian_filtered_image
+
+    # def _gaussian_filter_kernel_1d(self, kernel_size, sigma):
+    #     """
+    #     Description:
+    #         Generates a 1D Gaussian filter kernel.
+
+    #     Args:
+    #         kernel_size: Size of the 1D kernel.
+    #         sigma: Standard deviation of the Gaussian distribution.
+
+    #     Returns:
+    #         A numpy array representing the 1D Gaussian filter kernel.
+    #     """
+    #     offset = kernel_size // 2
+
+    #     x = np.arange(-offset, offset + 1)
+    #     kernel = np.exp(-(x**2) / (2 * sigma**2))
+    #     kernel /= np.sum(kernel)
+
+    #     return kernel
