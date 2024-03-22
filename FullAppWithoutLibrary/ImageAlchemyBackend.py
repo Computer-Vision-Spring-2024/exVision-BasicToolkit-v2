@@ -32,6 +32,7 @@ from HelperFunctions import (
     Histogram_computation,
     _3d_colored_or_not,
     cumulative_summation,
+    is_grayscale,
 )
 
 
@@ -53,8 +54,6 @@ class Image:
         # To facilitate the access to the images, we will store them in a list
         # and they will be shown in the tree widget.
 
-        # Convert the image to grayscale by default and store it for quick retrieval
-        # self.convert_to_grayscale()
 
     # =================================== Setters ====================================== #
     def set_output_image(self, output_data):
@@ -100,7 +99,7 @@ class Backend:
         ## === Image Data === ##
         self.current_image = None  # It holds the current image instance
         self.current_image_data = None  # It holds the current image data
-        self.grayscale_img = None  # It holds the grayscale image data
+        self.grayscale_image = None  # It holds the grayscale image data
         self.is_color = False  # It holds the state of the image (grayscale or not)
         self.output_image = None  # It holds the output image data
         self.cumulative_output = None  # It holds the cumulative output image data
@@ -122,6 +121,11 @@ class Backend:
 
         ## === Effects Library === ##
         self.effects_library = [
+            {
+                "name": "Convert to Grayscale",
+                "icon": "Resources/Icons/Effects/grayscale.png",
+                "function": self.display_grayscale,
+            },
             {
                 "name": "Add Noise",
                 "icon": "Resources/Icons/Effects/noise.png",
@@ -259,13 +263,6 @@ class Backend:
         # Add the same vertical spacer to the expanded view
         self.ui.left_bar_expanded_VLayout.addItem(spacerItem)
 
-        # Convert to Grayscale toggle button
-        self.ui.convert_to_grayscale_btn_collapsed.toggled.connect(
-            self.convert_to_grayscale
-        )
-        self.ui.convert_to_grayscale_btn_expanded.toggled.connect(
-            self.convert_to_grayscale
-        )
 
         ## === TabWidget: Close Tabs === ##
         self.ui.image_workspace.tabCloseRequested.connect(
@@ -356,7 +353,9 @@ class Backend:
                         parent_image = QtWidgets.QTreeWidgetItem([file_name])
                         if hasattr(self, "hybrid_object"):
                             for file_name, image_data in self.image_history.items():
-                                temp_img = self.to_grayscale(image_data.output_img)
+                                is_grayscale_hybrid= is_grayscale(image_data.output_img)
+                                temp_img= None
+                                temp_img= self.convert_to_grayscale(is_grayscale_hybrid, temp_img, image_data.output_img)
                                 self.hybrid_object.append_processed_image(
                                     file_name, temp_img
                                 )
@@ -367,6 +366,8 @@ class Backend:
                         # To affect the recent added image
                         self.current_image = img
                         self.current_image_data = img.img_data
+                        self.is_grayscale = is_grayscale(self.current_image_data)
+                        print(self.is_grayscale)
 
             else:
                 self.show_message("Error", "Invalid Image", QMessageBox.Critical)
@@ -413,6 +414,7 @@ class Backend:
                 image_data = self.image_history.get(file_name)
                 if image_data:
                     self.set_current_data(image_data)
+                    self.is_grayscale= is_grayscale(self.current_image_data)
                 else:
                     self.show_message(
                         "Error",
@@ -468,32 +470,6 @@ class Backend:
         widget.setVisible(True)
         # Expand the scroll area to sea the group box
         self.ui.toggle_effect_bar(True)
-
-    def to_grayscale(self, image):
-        """
-        Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
-
-        Parameters:
-        - image: numpy.ndarray
-            The input image.
-
-        Returns:
-        - numpy.ndarray
-            The grayscale image.
-        """
-        # Get the dimensions of the image
-        height, width, _ = image.shape
-
-        # Create an empty array to store the grayscale image
-        grayscale_image = np.zeros((height, width), dtype=np.uint8)
-
-        # Iterate over each pixel and use the linear approximation of gamma correction.
-        for y in range(height):
-            for x in range(width):
-                r, g, b = image[y, x]
-                grayscale_image[y, x] = 0.299 * r + 0.587 * g + 0.114 * b
-
-        return grayscale_image
 
     def display_image(self, input_img, output_img):
         """
@@ -585,12 +561,11 @@ class Backend:
     def display_selection_dialog(self, image, path):
         """
         Description:
-            - Shows a message dialog box with the specified icon.
+            - Shows a message dialog box to determine which subplot the user want to display the selected image in.
 
         Args:
-            - title: Title of the dialog box.
-            - message: Message to be displayed.
-            - icon_type: Type of icon to be displayed (QMessageBox.Information, QMessageBox.Critical, etc.).
+            - image: The image to be displayed.
+            - path: The path of the image.
         """
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Question)
@@ -605,23 +580,48 @@ class Backend:
 
         # Executing the message box
         response = msgBox.exec()
-        if response == QMessageBox.Yes:
-            img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            img = self.to_grayscale(img)
-            self.hybrid_object.set_image(img, 1, path)
-        elif response == QMessageBox.No:
-            img = cv2.imread(path)
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            img = self.to_grayscale(img)
-            self.hybrid_object.set_image(img, 0, path)
-        elif response == QMessageBox.Rejected:
+        if response == QMessageBox.Rejected:
             return
+        else:
+            img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            is_grayscale_hybrid= is_grayscale(img)
+            img= self.convert_to_grayscale(is_grayscale_hybrid, img, img)
+            if response == QMessageBox.Yes:  
+                self.hybrid_object.set_image(img, 1, path)
+            elif response == QMessageBox.No:
+                self.hybrid_object.set_image(img, 0, path)
+        
+        
+    def _check_conversion(self):
+        if self.is_grayscale == 0:
+            reply = QMessageBox.question(
+                None,
+                "Message",
+                "These effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.Yes:
+                self.grayscale_image= self.convert_to_grayscale(self.is_grayscale, self.grayscale_image, self.current_image_data)
+                self.is_grayscale= 1
+                return 1
+            else:
+                return 0
 
     # =========================== SideBar Functionalities ============================== #
 
     # SideBar functions that instantiate the effects #
     # ============================================== #
-    def convert_to_grayscale(self):
+    def display_grayscale(self):
+        """
+        Descripion:
+            - Convert an image to grayscale and display the image after conversion.
+        """
+        self.grayscale_image= self.convert_to_grayscale(self.is_grayscale, self.grayscale_image, self.current_image_data)
+        self.is_grayscale=1
+        self.display_image(self.current_image_data, self.grayscale_image)
+        
+    def convert_to_grayscale(self, flag, converted_img, to_be_coneverted_img):
         """
         Descripion:
             - Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
@@ -632,27 +632,13 @@ class Backend:
 
         Returns:
         - numpy.ndarray
-            The 2D grayscale image.
+            The grayscale image.
         """
-        if self.current_image_data is None:
-            self.show_message(
-                "Error", "Please load an image first.", QMessageBox.Critical
-            )
-            return
+        if flag == 0:
+            converted_img = np.dot(to_be_coneverted_img[..., :3], [0.2989, 0.5870, 0.1140])
+            flag=1
+        return converted_img
 
-        # Get the dimensions of the image
-        height, width, _ = self.current_image_data.shape
-
-        # Create an empty array to store the grayscale image
-        self.grayscale_image = np.zeros((height, width), dtype=np.uint8)
-
-        # Iterate over each pixel and use the linear approximation of gamma correction.
-        for y in range(height):
-            for x in range(width):
-                r, g, b = self.current_image_data[y, x]
-                self.grayscale_image[y, x] = 0.299 * r + 0.587 * g + 0.114 * b
-
-        return self.grayscale_image
 
     def add_noise(self):
         """
@@ -666,22 +652,10 @@ class Backend:
             )
             return
 
-        if self.is_color == False:
-            reply = QMessageBox.question(
-                None,
-                "Message",
-                "These effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.Yes:
-                self.ui.convert_to_grayscale_btn_collapsed.setChecked(True)
-                self.ui.convert_to_grayscale_btn_expanded.setChecked(True)
-                self.convert_to_grayscale()
-            else:
-                return
+        if self._check_conversion() == 0:
+            return
 
-        noise_effect = Noise("Uniform", 0, 0.5, self.current_image_data)
+        noise_effect = Noise("Uniform", 0, 0.5, self.grayscale_image)
 
         # Noise Effect Signal
         noise_effect.attributes_updated.connect(self.update_output_image)
@@ -711,22 +685,10 @@ class Backend:
             )
             return
 
-        if self.is_color == False:
-            reply = QMessageBox.question(
-                None,
-                "Message",
-                "These effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.Yes:
-                self.ui.convert_to_grayscale_btn_collapsed.setChecked(True)
-                self.ui.convert_to_grayscale_btn_expanded.setChecked(True)
-                self.convert_to_grayscale()
-            else:
-                return
+        if self._check_conversion() == 0:
+            return
 
-        filter_effect = Filter("Mean", "3", 0, self.current_image_data)
+        filter_effect = Filter("Mean", "3", 0, self.grayscale_image)
 
         # Noise Effect Signal
         filter_effect.attributes_updated.connect(self.update_output_image)
@@ -756,24 +718,13 @@ class Backend:
             )
             return
 
-        if self.is_color == False:
-            reply = QMessageBox.question(
-                None,
-                "Message",
-                "These effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.Yes:
-                self.ui.convert_to_grayscale_btn_collapsed.setChecked(True)
-                self.ui.convert_to_grayscale_btn_expanded.setChecked(True)
-                self.convert_to_grayscale()
-            else:
-                return
+        if self._check_conversion() == 0:
+            return
+
 
         edge_effect = EdgeDetector()  # pass mainwindow
         edge_effect.set_working_image(
-            self.current_image_data
+            self.grayscale_image
         )  # each time you upload or even switch to new image, feed the edge detector with this image
 
         # Edge Detector Effect Signal
@@ -789,8 +740,6 @@ class Backend:
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    def histograms_and_distribution_curve(self):
-        print("Histograms and Distribution Curve")
 
     def equalizer(self):
         self.is_color = _3d_colored_or_not(self.current_image_data)
@@ -806,7 +755,8 @@ class Backend:
             self.output_image = cv2.cvtColor(self.output_image, cv2.COLOR_LAB2RGB)
             self.plot_equlaizer_histograms(l_channel_equalized, 1)
         else:
-            self.convert_to_grayscale()
+            self.grayscale_image= self.convert_to_grayscale(self.is_grayscale, self.grayscale_image, self.current_image_data)
+            self.is_grayscale= 1
             equalizer = Equalizer(self.grayscale_image)
             # self.ui.scroll_area_VLayout.insertWidget(0, equalizer.equalizer_groupbox)
             self.output_image = equalizer.General_Histogram_Equalization()
@@ -876,7 +826,8 @@ class Backend:
             )
             return
 
-        self.grayscale_image = self.convert_to_grayscale()
+        self.grayscale_image = self.convert_to_grayscale(self.is_grayscale, self.grayscale_image, self.current_image_data)
+        self.is_grayscale=1
         normalizer_effect = Normalizer(self.grayscale_image, "simple rescale norm")
         normalizer_effect.attributes_updated.connect(self.update_output_image)
         self.output_image = normalizer_effect.normalized_image
@@ -969,22 +920,10 @@ class Backend:
             )
             return
 
-        if self.is_color == False:
-            reply = QMessageBox.question(
-                None,
-                "Message",
-                "These effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.Yes:
-                self.ui.convert_to_grayscale_btn_collapsed.setChecked(True)
-                self.ui.convert_to_grayscale_btn_expanded.setChecked(True)
-                self.convert_to_grayscale()
-            else:
-                return
+        if self._check_conversion() == 0:
+            return
 
-        threshold_effect = Thresholding(9, self.current_image_data, "Local")
+        threshold_effect = Thresholding(9, self.grayscale_image, "Local")
 
         # Noise Effect Signal
         threshold_effect.attributes_updated.connect(self.update_output_image)
@@ -1017,21 +956,10 @@ class Backend:
             )
             return
 
-        if self.is_color == False:
-            reply = QMessageBox.question(
-                None,
-                "Message",
-                "This effect should be applied on grayscale image.\nSo your image will be converted to grayscale.\nDo you wish to proceed?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.Yes:
-                self.ui.convert_to_grayscale_btn_collapsed.setChecked(True)
-                self.ui.convert_to_grayscale_btn_expanded.setChecked(True)
-                self.convert_to_grayscale()
-            else:
-                return
-        freq_effect = FreqFilters(self.current_image_data)
+        if self._check_conversion() == 0:
+            return
+
+        freq_effect = FreqFilters(self.grayscale_image)
         # Noise Effect Signal
         freq_effect.attributes_updated.connect(self.update_output_image)
         # Get the output image after applying the noise
@@ -1046,41 +974,6 @@ class Backend:
         self.update_table()
         self.display_image(self.current_image_data, self.output_image)
 
-    def create_subplot(self, title, frame_name):
-        """
-        Description:
-            - Makes a Layout to which a FigureCanvas object is added, to display the
-            images in the hybrid tab.
-        Args:
-            - title: Title of the subplot.
-            - frame_name: The name of the QFrame object that will be created.
-         Returns:
-            - frame_obj: The created QFrame object that the layout is associated with
-            - figure_obj: The figure of the FigureCanvas object
-            - subplot_obj: The subplot of the figure, in which the image will be displayed
-            - canvas_obj: The FigureCanvas object
-            - layout_obj: The layout to which the FigureCanvas object is added
-        """
-        frame_obj = QtWidgets.QFrame(self.hybrid_viewport)
-        frame_obj.setObjectName(frame_name)
-        frame_obj.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        frame_obj.setFrameShadow(QtWidgets.QFrame.Raised)
-        frame_obj.setStyleSheet("border: 1px solid white;")
-        # Create figure and subplot
-        figure_obj = plt.figure()
-        subplot_obj = figure_obj.add_subplot(111)
-        subplot_obj.set_title(title, color="white")
-        subplot_obj.axis("off")
-        figure_obj.patch.set_facecolor("none")
-        # Create canvas
-        canvas_obj = FigureCanvas(figure_obj)
-        # Create layouts for frame
-        layout_obj = QtWidgets.QVBoxLayout(frame_obj)
-        # Add canvas to layout
-        layout_obj.addWidget(canvas_obj)
-
-        return frame_obj, figure_obj, subplot_obj, canvas_obj, layout_obj
-
     def hybrid_images(self):
         """
         Description:
@@ -1094,7 +987,9 @@ class Backend:
         self.hybrid_object.processed_image_library.clear()
         for file_name, image_data in self.image_history.items():
             if not (len(image_data.output_img.shape) == 2):
-                temp_img = self.to_grayscale(image_data.output_img)
+                is_grayscale_hybrid= is_grayscale(image_data.output_img)
+                temp_img= None
+                temp_img= self.convert_to_grayscale(is_grayscale_hybrid, temp_img, image_data.output_img )
                 self.hybrid_object.append_processed_image(file_name, temp_img)
             else:
                 self.hybrid_object.append_processed_image(
@@ -1145,7 +1040,8 @@ class Backend:
             parent_item = QtWidgets.QTreeWidgetItem([file_name])
             if hasattr(self, "hybrid_object"):
                 temp_img = cv2.cvtColor(image_data.output_img, cv2.COLOR_BGR2RGB)
-                temp_img = self.to_grayscale(temp_img)
+                is_grayscale_hybrid= is_grayscale(self.image_data.output_img)
+                temp_img= self.convert_to_grayscale(is_grayscale_hybrid, temp_img, temp_img)
                 self.hybrid_object.append_processed_image(file_name, temp_img)
 
             # Add the parent item to the tree widget
