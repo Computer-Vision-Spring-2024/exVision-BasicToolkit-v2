@@ -17,10 +17,16 @@ The app UI meant to be similar to Photoshop UI. It has different sections, each 
 - Open the same image more than once.
 - When you expand or collapse the control panel, the expanded or the collapsed view of the effects menu appears for a second.
 - Themes Feature.
+- Modify the width of the side bars
+- [URGENT] Add HE effect to the tree.
 
 ### Digital Image Processing Functions (DIPFs):
 _That means "Is this effect was integrated in the app or not?"._
-- add 
+
+#### Additional features:
+- correction methods: log, exp, gamma,...etc
+- pseudo coloring for x-ray images (comment: needs lots of expirements with palettes and suitalbe image for each palette)
+- CLAHE
 
 
 ### General:
