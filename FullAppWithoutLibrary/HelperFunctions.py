@@ -3,7 +3,22 @@ from typing import Tuple
 import cv2
 import numpy as np
 
+def is_grayscale(img):
+    """
+    Determine if an image is grayscale or not.
 
+    Parameters:
+    image (np.ndarray): The input image.
+
+    Returns:
+    int: Returns 1 if the image is grayscale, 0 if the image is colored.
+    """
+    
+    if len(img.shape) == 2:
+        return 1
+    else:
+        return 0
+    
 def merge_channels(channel1, channel2, channel3):
     """
     Merge three single-channel images into a single three-channel image.

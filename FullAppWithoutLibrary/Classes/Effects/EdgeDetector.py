@@ -25,7 +25,6 @@ class EdgeDetector(QDoubleClickPushButton):
             "laplacian": self.laplacian,
             "canny": self.canny,
         }
-        self.current_image = None # this stores the original image (whether it's colored or grayscaled)
         self.current_working_image = None  # this represents the current image on which we will perform all operations (MUST BE GRAYSCALE)
         self.current_detector_type = "sobel_3x3"  # default detector 
         self.edged_image = None  # output image 
@@ -69,9 +68,6 @@ class EdgeDetector(QDoubleClickPushButton):
         - image: numpy.ndarray
             The input image.
         """
-        self.current_image = image  # assign regradless it's colored or grayscale image
-        if ( len(image.shape) == 3):  # if colored (meaning it has third dimension), make sure it's converted into grayscale.
-            image = self.to_grayscale(image)
         self.current_working_image = image # Always grayscale  
     # ----------------------------------------------------------------------------- Methods ------------------------------------------------------------------------
     def to_grayscale(self, image):

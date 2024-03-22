@@ -20,6 +20,7 @@ The app UI meant to be similar to Photoshop UI. It has different sections, each 
 
 ### Digital Image Processing Functions (DIPFs):
 _That means "Is this effect was integrated in the app or not?"._
+- Save the converted grayscale image in the grayscale_image attribute of the class Image.
 
 
 ### General:

@@ -23,8 +23,7 @@ class Noise(QDoubleClickPushButton):
             val01  # The lower limit, or pepper, or the mean depending on the noise type
         )
         self.val02 = val02  # The upper limit, or salt, or the standard deviation depending on the noise type
-        self.image = imageData  # The image that the noise will be added to
-        self.grayscale_image = self.to_grayscale()
+        self.grayscale_image = imageData  # The image that the noise will be added to
         self.shape = self.grayscale_image.shape  # The shape of the grayscale image
 
         # Calculate the default noisy image
@@ -88,32 +87,6 @@ class Noise(QDoubleClickPushButton):
         elif self.type == "Salt & Pepper":
             return self.generate_salt_pepper_noise()
 
-    def to_grayscale(self):
-        """
-        Descripion:
-            - Convert an image to grayscale by averaging the red, green, and blue channels for each pixel.
-
-        Parameters:
-        - image: numpy.ndarray
-            The input image.
-
-        Returns:
-        - numpy.ndarray
-            The grayscale image.
-        """
-        # Get the dimensions of the image
-        height, width, _ = self.image.shape
-
-        # Create an empty array to store the grayscale image
-        grayscale_image = np.zeros((height, width), dtype=np.uint8)
-
-        # Iterate over each pixel and use the linear approximation of gamma correction.
-        for y in range(height):
-            for x in range(width):
-                r, g, b = self.image[y, x]
-                grayscale_image[y, x] = 0.299 * r + 0.587 * g + 0.114 * b
-
-        return grayscale_image
 
     def generate_uniform_noise(self):
         """
