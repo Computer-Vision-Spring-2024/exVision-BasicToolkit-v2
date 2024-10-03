@@ -75,10 +75,45 @@ class Ui_ImgProcessor(object):
         self.left_bar_collapsed = QtWidgets.QWidget(self.centralwidget)
         self.left_bar_collapsed.setObjectName("left_bar_collapsed")
         self.left_bar_collapsed_VLayout = QtWidgets.QVBoxLayout(self.left_bar_collapsed)
+        # Add a "convert to grayscale button" to the collapsed view
+        self.convert_to_grayscale_btn_collapsed = QtWidgets.QPushButton(
+            self.left_bar_collapsed
+        )
+        self.convert_to_grayscale_btn_collapsed.setObjectName(
+            "   convert_to_grayscale_btn_collapsed"
+        )
+        self.convert_to_grayscale_btn_collapsed.setIcon(
+            QIcon("Resources/Icons/Effects/grayscale.png")
+        )
+        self.convert_to_grayscale_btn_collapsed.setIconSize(QSize(24, 24))
+        self.convert_to_grayscale_btn_collapsed.setCheckable(True)
+        self.convert_to_grayscale_btn_collapsed.setCursor(
+            QCursor(Qt.PointingHandCursor)
+        )
+        self.left_bar_collapsed_VLayout.addWidget(
+            self.convert_to_grayscale_btn_collapsed, alignment=QtCore.Qt.AlignLeft
+        )
         # Expanded View
         self.left_bar_expanded = QtWidgets.QWidget(self.centralwidget)
         self.left_bar_expanded.setObjectName("left_bar_expanded")
         self.left_bar_expanded_VLayout = QtWidgets.QVBoxLayout(self.left_bar_expanded)
+        # Add a "convert to grayscale button" to the expanded view
+        self.convert_to_grayscale_btn_expanded = QtWidgets.QPushButton(
+            self.left_bar_expanded
+        )
+        self.convert_to_grayscale_btn_expanded.setObjectName(
+            "convert_to_grayscale_btn_expanded"
+        )
+        self.convert_to_grayscale_btn_expanded.setIcon(
+            QIcon("Resources/Icons/Effects/grayscale.png")
+        )
+        self.convert_to_grayscale_btn_expanded.setIconSize(QSize(20, 20))
+        self.convert_to_grayscale_btn_expanded.setText("  Convert to Grayscale")
+        self.convert_to_grayscale_btn_expanded.setCheckable(True)
+        self.convert_to_grayscale_btn_expanded.setCursor(QCursor(Qt.PointingHandCursor))
+        self.left_bar_expanded_VLayout.addWidget(
+            self.convert_to_grayscale_btn_expanded, alignment=QtCore.Qt.AlignLeft
+        )
 
         # Viewport: Image Workspace #
         # ========================= #
