@@ -8,6 +8,31 @@
 - Threshold: https://encord.com/blog/image-thresholding-image-processing/ & https://medium.com/geekculture/image-thresholding-from-scratch-a66ae0fb6f09
 
 ## Frequency domain filters and hybrid images
+### Resizing
+- [Stack Overflow - Resizing Image Algorithm in Python](https://stackoverflow.com/questions/12447549/resizing-image-algorithm-in-python)
+  
+### Nearest Neighbor Interpolation
+- [Sciencedirect - Nearest Neighbor Interpolation](https://www.sciencedirect.com/topics/engineering/nearest-neighbor-interpolation)
+- [AskPython - K-Nearest Neighbors from Scratch](https://www.askpython.com/python/examples/k-nearest-neighbors-from-scratch)
+
+### Low and High Pass Filters
+- [YouTube - Low and High Pass Filters](https://www.youtube.com/watch?v=YVBxM64kpkU)
+
+
+==========================================
+
+From Eng. Nouran README:
+
+# Task-1
+
+## Threshold-Transformation
+
+### Links to understand these points:
+
+- Histogram: https://www.youtube.com/watch?v=tUs7Glv7lpA
+- Threshold: https://encord.com/blog/image-thresholding-image-processing/ & https://medium.com/geekculture/image-thresholding-from-scratch-a66ae0fb6f09
+
+## Frequency domain filters and hybrid images
 ### Image Resize
 - [Stack Overflow - Resizing Image Algorithm in Python](https://stackoverflow.com/questions/12447549/resizing-image-algorithm-in-python)
   
@@ -59,3 +84,13 @@
 
 ## Normalization
 - [Using These 5 Ways](https://blog.finxter.com/5-best-ways-to-normalize-an-image-in-opencv-python/)
+
+===============================================================
+
+# Task-2
+
+## Hough Line Transform:
+
+### Link for explanation: https://medium.com/@st1739/hough-transform-287b2dac0c70
+
+### Link of Implementation: https://medium.com/@alb.formaggio/implementing-the-hough-transform-from-scratch-09a56ba7316b
