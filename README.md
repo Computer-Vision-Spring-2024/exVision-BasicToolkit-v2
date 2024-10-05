@@ -11,15 +11,15 @@
 4. [References](#references)
    - [Threshold-Transformation and Frequency Domain Filters](#threshold-transformation-and-frequency-domain-filters)
      - [Useful Links for Understanding](#useful-links-for-understanding)
-      - [Image Resizing and Interpolation](#image-resizing-and-interpolation)
-      - [Low and High Pass Filters](#low-and-high-pass-filters)
-      - [Common Intensity Transformation Functions (Optional)](#common-intensity-transformation-functions-optional)
+     - [Image Resizing and Interpolation](#image-resizing-and-interpolation)
+     - [Low and High Pass Filters](#low-and-high-pass-filters)
+     - [Common Intensity Transformation Functions (Optional)](#common-intensity-transformation-functions-optional)
    - [Image Histograms and Equalization](#image-histograms-and-equalization)
    - [Histogram Equalization Methods](#histogram-equalization-methods)
-     - [Global Histogram Equalization (GHE)](#global-histogram-equalization-ghe)
-     - [Contrast Limiting Adaptive Histogram Equalization (CLAHE)](#contrast-limiting-adaptive-histogram-equalization-clahe)
-     - [Multipurpose Beta Optimized Bihistogram Equalization (MBOBHE)](#multipurpose-beta-optimized-bihistogram-equalization-mbobhe)
-     - [Additional Topics](#additional-topics)
+     - [Global Histogram Equalization (GHE)]
+     - [Contrast Limiting Adaptive Histogram Equalization (CLAHE)]
+     - [Multipurpose Beta Optimized Bihistogram Equalization (MBOBHE)]
+     - [Additional Topics]
    - [Normalization](#normalization)
    - [Hough Line Transform](#hough-line-transform)
 
@@ -27,13 +27,12 @@
 ## Overview
 
 BasicToolkit is a PyQt desktop application that offers basic image processing tools and classical computer vision techniques built from scratch. It includes the following features:
-   - Grayscale conversion
-   - Additive Noise: Uniform, Gaussian, and Salt & Pepper noise
-   - Filters: Mean, Median, and Gaussian filter
-   - Edge Detection: Canny, Laplacian, Prewitt, Roberts, Sobel
-   - Equalization and Normalization
-   - Frequency Filters and Hybrid Images
-   - Local and Global Thresholding
+  - Additive Noise: Uniform, Gaussian, and Salt & Pepper noise
+  - Filters: Mean, Median, and Gaussian filter
+  - Edge Detection: Canny, Laplacian, Prewitt, Roberts, Sobel
+  - Equalization and Normalization
+  - Frequency Filters and Hybrid Images
+  - Local and Global Thresholding
 
 Want to know more? Refer to [the latest version of the documentation](README-Assets)!
 
