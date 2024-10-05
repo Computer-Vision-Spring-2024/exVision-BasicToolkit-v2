@@ -1,4 +1,4 @@
-# exVision: BasicToolkit
+# exVision: BasicToolkit v2
 
 > [!WARNING]  
 > The "exVision-BasicToolkit" repository was the initial version of our work, containing basic computer vision and image processing tools. While the core logic functions properly, the GUI application may not perform efficiently. For a more organized and optimized version with additional features and better resource management, please refer to the <a href="https://github.com/Computer-Vision-Spring-2024/exVision">exVision</a> repository.
