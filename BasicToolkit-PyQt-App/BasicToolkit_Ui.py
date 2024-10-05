@@ -11,15 +11,14 @@ import matplotlib.pyplot as plt
 
 # in CMD: pip install qdarkstyle -> pip install pyqtdarktheme
 import qdarktheme
+from BasicToolkit_Backend import BasicToolkit_Backend
+from Classes.ExtendedWidgets.CustomTabWidget import CustomTabWidget
+from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QCursor, QIcon
 from PyQt5.QtWidgets import QHeaderView
-
-from Classes.ExtendedWidgets.CustomTabWidget import CustomTabWidget
-from Classes.ExtendedWidgets.TableWithMovingRows import TableWidgetDragRows
-from ImageAlchemyBackend import Backend
 
 
 class Ui_ImgProcessor(object):
@@ -702,7 +701,7 @@ if __name__ == "__main__":
     ImgProcessor = QtWidgets.QMainWindow()
     ui = Ui_ImgProcessor()
     ui.setupUi(ImgProcessor)
-    backend = Backend(ui)
+    backend = BasicToolkit_Backend(ui)
     ImgProcessor.show()
     qdarktheme.setup_theme("dark")
     sys.exit(app.exec_())

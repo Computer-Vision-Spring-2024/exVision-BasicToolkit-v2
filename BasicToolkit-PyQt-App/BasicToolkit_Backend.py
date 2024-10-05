@@ -2,7 +2,6 @@ import os
 from collections import defaultdict
 
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 from Classes.Effects.EdgeDetector import EdgeDetector
 from Classes.Effects.Equalizer import Equalizer
@@ -12,20 +11,17 @@ from Classes.Effects.Hybrid import HybridImages
 from Classes.Effects.Noise import Noise
 from Classes.Effects.Normalize import Normalizer
 from Classes.Effects.Thresholding import Thresholding
-from Classes.EffectsWidgets.GrayscaleGroupbox import GrayscaleConverter
 from Classes.ExtendedWidgets.CanvasWidget import CanvasWidget
 from Classes.ExtendedWidgets.DoubleClickPushButton import QDoubleClickPushButton
-from HelperFunctions import (
+from helper_functions import (
     BGR2LAB,
     Histogram_computation,
     _3d_colored_or_not,
     cumulative_summation,
     is_grayscale,
 )
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QFileDialog,
     QGroupBox,
@@ -89,7 +85,7 @@ class Image:
         return self.grayscale_img
 
 
-class Backend:
+class BasicToolkit_Backend:
     def __init__(self, ui):
         self.ui = ui
 
