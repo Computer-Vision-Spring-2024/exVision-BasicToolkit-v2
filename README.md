@@ -27,12 +27,13 @@
 ## Overview
 
 BasicToolkit is a PyQt desktop application that offers basic image processing tools and classical computer vision techniques built from scratch. It includes the following features:
-  - Additive Noise: Uniform, Gaussian, and Salt & Pepper noise
-  - Filters: Mean, Median, and Gaussian filter
-  - Edge Detection: Canny, Laplacian, Prewitt, Roberts, Sobel
-  - Equalization and Normalization
-  - Frequency Filters and Hybrid Images
-  - Local and Global Thresholding
+   - Grayscale conversion
+   - Additive Noise: Uniform, Gaussian, and Salt & Pepper noise
+   - Filters: Mean, Median, and Gaussian filter
+   - Edge Detection: Canny, Laplacian, Prewitt, Roberts, Sobel
+   - Equalization and Normalization
+   - Frequency Filters and Hybrid Images
+   - Local and Global Thresholding
 
 Want to know more? Refer to [the latest version of the documentation](README-Assets)!
 
